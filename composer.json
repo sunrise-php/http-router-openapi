@@ -1,0 +1,51 @@
+{
+    "name": "sunrise/http-router-openapi",
+    "homepage": "https://github.com/sunrise-php/http-router-openapi",
+    "description": "Sunrise // OpenApi (Swagger) Specification support for Sunrise HTTP router",
+    "license": "MIT",
+    "keywords": [
+        "fenric",
+        "sunrise",
+        "http",
+        "router",
+        "annotations",
+        "openapi",
+        "swagger"
+    ],
+    "authors": [
+        {
+            "name": "Anatoly Fenric",
+            "email": "anatoly@fenric.ru",
+            "homepage": "https://anatoly.fenric.ru/"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "doctrine/annotations": "^1.6",
+        "sunrise/http-router": "^2.0"
+    },
+    "require-dev": {
+        "phpbench/phpbench": "0.16.10",
+        "phpunit/phpunit": "7.5.11",
+        "sunrise/coding-standard": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunrise\\Http\\Router\\OpenApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sunrise\\Http\\Router\\OpenApi\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpunit --colors=always --coverage-text",
+            "phpcs"
+        ],
+        "bench": [
+            "phpbench run --report='generator: \"table\", cols: [\"groups\", \"subject\", \"mean\", \"diff\"], sort: {mean: \"asc\"}'"
+        ]
+    }
+}
