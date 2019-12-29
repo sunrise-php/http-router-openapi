@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
@@ -52,7 +52,7 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
     /**
      * @Required
      *
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-requestbodycontent
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types

@@ -9,16 +9,16 @@
  * @link https://github.com/sunrise-php/http-router-openapi
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\OpenApi\Exception;
 
 /**
  * Import classes
  */
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
+use RuntimeException;
 
 /**
- * SchemaInterface
+ * InvalidReferenceException
  */
-interface SchemaInterface extends ObjectInterface
+class InvalidReferenceException extends RuntimeException implements ExceptionInterface
 {
 }

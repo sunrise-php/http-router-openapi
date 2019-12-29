@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
@@ -55,21 +55,21 @@ final class Operation extends AbstractAnnotation implements OperationInterface
     public $description;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentationInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExternalDocumentationInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationexternaldocs
      */
     public $externalDocs;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationparameters
      */
     public $parameters;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBodyInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationrequestbody
      */
@@ -78,7 +78,7 @@ final class Operation extends AbstractAnnotation implements OperationInterface
     /**
      * @Required
      *
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ResponseInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationresponses
      */
@@ -92,7 +92,7 @@ final class Operation extends AbstractAnnotation implements OperationInterface
     public $deprecated;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SecurityRequirementInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SecurityRequirementInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationsecurity
      */

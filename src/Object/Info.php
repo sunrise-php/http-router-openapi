@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Object;
@@ -25,6 +25,8 @@ class Info extends AbstractObject
 {
 
     /**
+     * The title of the application
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infotitle
@@ -32,13 +34,21 @@ class Info extends AbstractObject
     protected $title;
 
     /**
+     * A short description of the application
+     *
+     * CommonMark syntax MAY be used for rich text representation.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infodescription
+     *
+     * @link https://spec.commonmark.org/
      */
     protected $description;
 
     /**
+     * A URL to the Terms of Service for the API. MUST be in the format of a URL
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infotermsofservice
@@ -46,6 +56,8 @@ class Info extends AbstractObject
     protected $termsOfService;
 
     /**
+     * The contact information for the exposed API
+     *
      * @var Contact
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infocontact
@@ -53,6 +65,8 @@ class Info extends AbstractObject
     protected $contact;
 
     /**
+     * The license information for the exposed API
+     *
      * @var License
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infolicense
@@ -60,9 +74,13 @@ class Info extends AbstractObject
     protected $license;
 
     /**
+     * The version of the OpenAPI document
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infoversion
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#oasVersion
      */
     protected $version;
 

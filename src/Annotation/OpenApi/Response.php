@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
@@ -52,14 +52,14 @@ final class Response extends AbstractAnnotation implements ResponseInterface, Co
     public $description;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\HeaderInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-responseheaders
      */
     public $headers;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-responsecontent
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
@@ -67,7 +67,7 @@ final class Response extends AbstractAnnotation implements ResponseInterface, Co
     public $content;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\LinkInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\LinkInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-responselinks
      */

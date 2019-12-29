@@ -9,16 +9,16 @@
  * @link https://github.com/sunrise-php/http-router-openapi
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\OpenApi\Exception;
 
 /**
  * Import classes
  */
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
+use Throwable;
 
 /**
- * SchemaInterface
+ * ExceptionInterface
  */
-interface SchemaInterface extends ObjectInterface
+interface ExceptionInterface extends Throwable
 {
 }

@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
@@ -44,17 +44,17 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $refName;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface
      */
     public $additionalProperties;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface>
      */
     public $allOf;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface>
      */
     public $anyOf;
 
@@ -76,7 +76,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $description;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\DiscriminatorInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\DiscriminatorInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemadiscriminator
      */
@@ -111,7 +111,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $exclusiveMinimum;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentationInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExternalDocumentationInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemaexternaldocs
      */
@@ -123,7 +123,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $format;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface
      */
     public $items;
 
@@ -191,7 +191,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $multipleOf;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface
      */
     public $not;
 
@@ -203,7 +203,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $nullable;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface>
      */
     public $oneOf;
 
@@ -215,7 +215,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $pattern;
 
     /**
-     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface>
      */
     public $properties;
 
@@ -260,7 +260,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $writeOnly;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\XmlInterface
+     * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\XmlInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemaxml
      */

@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi;
@@ -18,6 +18,11 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
+use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
+use Sunrise\Http\Router\OpenApi\Object\Info;
+use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
+use Sunrise\Http\Router\OpenApi\Object\Server;
+use Sunrise\Http\Router\OpenApi\Object\Tag;
 use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
 
@@ -37,13 +42,24 @@ class OpenApi extends AbstractObject
 {
 
     /**
+     * The OpenAPI Specification version that the OpenAPI document uses
+     *
+     * The openapi field SHOULD be used by tooling specifications and clients to interpret the OpenAPI document.
+     * This is not related to the API info.version string.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasversion
+     *
+     * @link https://semver.org/spec/v2.0.0.html
      */
     protected $openapi = '3.0.2';
 
     /**
+     * Provides metadata about the API
+     *
+     * The metadata MAY be used by tooling as required.
+     *
      * @var Info
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasinfo
@@ -51,6 +67,11 @@ class OpenApi extends AbstractObject
     protected $info;
 
     /**
+     * An array of Server Objects, which provide connectivity information to a target server
+     *
+     * If the servers property is not provided, or is an empty array,
+     * the default value would be a Server Object with a url value of /.
+     *
      * @var Server[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasservers
@@ -58,6 +79,8 @@ class OpenApi extends AbstractObject
     protected $servers;
 
     /**
+     * The available paths and operations for the API
+     *
      * @var array
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oaspaths
@@ -65,6 +88,8 @@ class OpenApi extends AbstractObject
     protected $paths;
 
     /**
+     * An element to hold various schemas for the specification
+     *
      * @var array
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oascomponents
@@ -72,6 +97,12 @@ class OpenApi extends AbstractObject
     protected $components;
 
     /**
+     * A declaration of which security mechanisms can be used across the API
+     *
+     * The list of values includes alternative security requirement objects that can be used.
+     * Only one of the security requirement objects need to be satisfied to authorize a request.
+     * Individual operations can override this definition.
+     *
      * @var SecurityRequirement[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oassecurity
@@ -79,6 +110,13 @@ class OpenApi extends AbstractObject
     protected $security;
 
     /**
+     * A list of tags used by the specification with additional metadata
+     *
+     * The order of the tags can be used to reflect on their order by the parsing tools.
+     * Not all tags that are used by the Operation Object must be declared.
+     * The tags that are not declared MAY be organized randomly or based on the tools' logic.
+     * Each tag name in the list MUST be unique.
+     *
      * @var Tag[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oastags
@@ -86,6 +124,8 @@ class OpenApi extends AbstractObject
     protected $tags;
 
     /**
+     * Additional external documentation
+     *
      * @var ExternalDocumentation
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasexternaldocs
@@ -105,7 +145,7 @@ class OpenApi extends AbstractObject
         $this->info = $info;
 
         $this->annotationReader = new SimpleAnnotationReader();
-        $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
+        $this->annotationReader->addNamespace('Sunrise\Http\Router\OpenApi\Annotation');
     }
 
     /**

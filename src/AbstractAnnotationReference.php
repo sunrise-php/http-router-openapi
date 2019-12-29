@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi;
@@ -18,7 +18,7 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
-use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
+use Sunrise\Http\Router\OpenApi\Exception\InvalidReferenceException;
 
 /**
  * Import functions
@@ -98,7 +98,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
      *
      * @return ComponentObjectInterface
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidReferenceException
      */
     public function getAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
     {
@@ -134,7 +134,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
      *
      * @return ComponentObjectInterface
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidReferenceException
      *
      * @see SimpleAnnotationReader::getMethodAnnotation()
      */
@@ -142,7 +142,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     {
         if (!method_exists($this->class, $this->method)) {
             $message = 'Annotation %s refers to non-existent method %s::%s()';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, get_called_class(), $this->class, $this->method)
             );
         }
@@ -154,7 +154,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
 
         if (null === $object) {
             $message = 'Method %s::%s() does not contain the annotation %s';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->method, $this->getAnnotationName())
             );
         }
@@ -169,7 +169,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
      *
      * @return ComponentObjectInterface
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidReferenceException
      *
      * @see SimpleAnnotationReader::getPropertyAnnotation()
      */
@@ -177,7 +177,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     {
         if (!property_exists($this->class, $this->property)) {
             $message = 'Annotation %s refers to non-existent property %s::$%s';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, get_called_class(), $this->class, $this->property)
             );
         }
@@ -189,7 +189,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
 
         if (null === $object) {
             $message = 'Property %s::$%s does not contain the annotation %s';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->property, $this->getAnnotationName())
             );
         }
@@ -204,7 +204,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
      *
      * @return ComponentObjectInterface
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidReferenceException
      *
      * @see SimpleAnnotationReader::getClassAnnotation()
      */
@@ -212,7 +212,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     {
         if (!class_exists($this->class)) {
             $message = 'Annotation %s refers to non-existent class %s';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, get_called_class(), $this->class)
             );
         }
@@ -224,7 +224,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
 
         if (null === $object) {
             $message = 'Class %s does not contain the annotation %s';
-            throw new InvalidAnnotationParameterException(
+            throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->getAnnotationName())
             );
         }

@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Object;
@@ -25,6 +25,13 @@ class Server extends AbstractObject
 {
 
     /**
+     * A URL to the target host
+     *
+     * This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to
+     * the location where the OpenAPI document is being served.
+     *
+     * Variable substitutions will be made when a variable is named in {brackets}.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-serverurl
@@ -32,13 +39,23 @@ class Server extends AbstractObject
     protected $url;
 
     /**
+     * An optional string describing the host designated by the URL
+     *
+     * CommonMark syntax MAY be used for rich text representation.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-serverdescription
+     *
+     * @link https://spec.commonmark.org/
      */
     protected $description;
 
     /**
+     * A map between a variable name and its value
+     *
+     * The value is used for substitution in the server's URL template.
+     *
      * @var ServerVariable[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-servervariables

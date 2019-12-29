@@ -4,9 +4,9 @@
  * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
- * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
- * @link https://github.com/sunrise-php/http-router
+ * @copyright Copyright (c) 2019, Anatoly Fenric
+ * @license https://github.com/sunrise-php/http-router-openapi/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/http-router-openapi
  */
 
 namespace Sunrise\Http\Router\OpenApi\Object;
@@ -25,6 +25,10 @@ class OAuthFlow extends AbstractObject
 {
 
     /**
+     * The authorization URL to be used for this flow
+     *
+     * This MUST be in the form of a URL.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oauthflowauthorizationurl
@@ -32,6 +36,10 @@ class OAuthFlow extends AbstractObject
     protected $authorizationUrl;
 
     /**
+     * The token URL to be used for this flow
+     *
+     * This MUST be in the form of a URL.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oauthflowtokenurl
@@ -39,6 +47,10 @@ class OAuthFlow extends AbstractObject
     protected $tokenUrl;
 
     /**
+     * The URL to be used for obtaining refresh tokens
+     *
+     * This MUST be in the form of a URL.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oauthflowrefreshurl
@@ -46,6 +58,10 @@ class OAuthFlow extends AbstractObject
     protected $refreshUrl;
 
     /**
+     * The available scopes for the OAuth2 security scheme
+     *
+     * A map between the scope name and a short description for it.
+     *
      * @var string[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oauthflowscopes
