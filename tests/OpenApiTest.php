@@ -6,6 +6,7 @@ namespace Sunrise\Http\Router\OpenApi\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
@@ -13,8 +14,9 @@ use Sunrise\Http\Router\OpenApi\Object\Server;
 use Sunrise\Http\Router\OpenApi\Object\Tag;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 use Sunrise\Http\Router\OpenApi\OpenApi;
+use Sunrise\Http\Router\OpenApi\Tests\Fixture;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
  * OpenApiTest
@@ -30,7 +32,6 @@ class OpenApiTest extends TestCase
         $object = new OpenApi(new Info('foo', 'bar'));
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**
@@ -193,6 +194,96 @@ class OpenApiTest extends TestCase
             ],
             'externalDocs' => [
                 'url' => 'baz',
+            ],
+        ], $object->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddRoute() : void
+    {
+        $route = $this->createMock(RouteInterface::class);
+        $route->method('getRequestHandler')->willReturn(new Fixture\PetStore\Endpoint());
+        $route->method('getName')->willReturn('foo');
+        $route->method('getMethods')->willReturn(['GET']);
+        $route->method('getPath')->willReturn('/foo(/{a<\d+>})/{b<\w+>}/{c}');
+
+        $object = new OpenApi(new Info('foo', 'bar'));
+        $object->addRoute($route);
+
+        $this->assertSame([
+            'openapi' => '3.0.2',
+            'info' => [
+                'title' => 'foo',
+                'version' => 'bar',
+            ],
+            'paths' => [
+                '/foo/{a}/{b}/{c}' => [
+                    'get' => [
+                        'operationId' => 'foo',
+                        'parameters' => [
+                            [
+                                'name' => 'a',
+                                'in' => 'path',
+                                'required' => false,
+                                'schema' => [
+                                    'pattern' => '\d+',
+                                    'type' => 'string',
+                                ],
+                            ],
+                            [
+                                'name' => 'b',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => [
+                                    'pattern' => '\w+',
+                                    'type' => 'string',
+                                ],
+                            ],
+                            [
+                                'name' => 'c',
+                                'in' => 'path',
+                                'required' => true,
+                            ],
+                        ],
+                        'responses' => [
+                            200 => [
+                                'description' => 'All okay',
+                            ],
+                            'default' => [
+                                'description' => 'Any error',
+                                'content' => [
+                                    'application/json' => [
+                                        'schema' => [
+                                            '$ref' => '#/components/schemas/Error',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'components' => [
+                'schemas' => [
+                    'Error' => [
+                        'properties' => [
+                            'code' => [
+                                'format' => 'int32',
+                                'type' => 'integer',
+                            ],
+                            'message' => [
+                                'type' => 'string',
+                            ],
+                        ],
+                        'required' => [
+                            'code',
+                            'message',
+                        ],
+                        'type' => 'object',
+                    ],
+                ],
             ],
         ], $object->toArray());
     }

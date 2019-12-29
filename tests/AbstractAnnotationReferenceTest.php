@@ -32,13 +32,7 @@ class AbstractAnnotationReferenceTest extends TestCase
      */
     public function testContracts() : void
     {
-        $reference = new class extends AbstractAnnotationReference
-        {
-            public function getAnnotationName() : string
-            {
-                return Schema::class;
-            }
-        };
+        $reference = $this->createMock(AbstractAnnotationReference::class);
 
         $this->assertInstanceOf(ObjectInterface::class, $reference);
     }

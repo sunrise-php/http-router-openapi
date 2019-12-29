@@ -3,9 +3,35 @@
 namespace Sunrise\Http\Router\OpenApi\Tests\Fixture\PetStore;
 
 /**
- * Endpoint
+ * Import classes
  */
-abstract class Endpoint
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+/**
+ * Endpoint
+ *
+ * @OpenApi\Operation(
+ *   responses = {
+ *     200 = @OpenApi\Response(
+ *       description = "All okay",
+ *     ),
+ *     "default" = @OpenApi\Response(
+ *       description = "Any error",
+ *       content = {
+ *         "application/json" = @OpenApi\MediaType(
+ *           schema = @OpenApi\SchemaReference(
+ *             class = "Sunrise\Http\Router\OpenApi\Tests\Fixture\PetStore\Endpoint",
+ *             method = "error",
+ *           ),
+ *         ),
+ *       },
+ *     ),
+ *   },
+ * )
+ */
+class Endpoint implements RequestHandlerInterface
 {
 
     /**
@@ -24,6 +50,14 @@ abstract class Endpoint
      * @var int
      */
     protected $limit = 50;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        throw new \RuntimeException(\sprintf(__METHOD__ . ': cannot be called.'));
+    }
 
     /**
      * @OpenApi\Schema(
