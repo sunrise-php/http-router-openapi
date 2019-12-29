@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\OpenApi\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Response;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
+use Sunrise\Http\Router\OpenApi\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 use Sunrise\Http\Router\OpenApi\Tests\Fixture;
@@ -98,7 +98,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Class %s does not contain the annotation %s',
             $reference->class,
@@ -123,7 +123,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Annotation %s refers to non-existent class %s',
             get_class($reference),
@@ -170,7 +170,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Property %s::$%s does not contain the annotation %s',
             $reference->class,
@@ -197,7 +197,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Annotation %s refers to non-existent property %s::$%s',
             get_class($reference),
@@ -245,7 +245,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Method %s::%s() does not contain the annotation %s',
             $reference->class,
@@ -272,7 +272,7 @@ class AbstractAnnotationReferenceTest extends TestCase
             }
         };
 
-        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectException(InvalidReferenceException::class);
         $this->expectExceptionMessage(sprintf(
             'Annotation %s refers to non-existent method %s::%s()',
             get_class($reference),

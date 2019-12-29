@@ -20,8 +20,7 @@ class AbstractObjectTest extends TestCase
      */
     public function testContracts() : void
     {
-        $object = new class extends AbstractObject {
-        };
+        $object = $this->createMock(AbstractObject::class);
 
         $this->assertInstanceOf(ObjectInterface::class, $object);
     }
@@ -31,26 +30,30 @@ class AbstractObjectTest extends TestCase
      */
     public function testToArray() : void
     {
-        $foo = new class extends AbstractObject {
+        $foo = new class extends AbstractObject
+        {
             public $foo = 'foo';
         };
 
-        $bar = new class extends AbstractObject {
+        $bar = new class extends AbstractObject
+        {
             public $bar = 'bar';
         };
 
-        $baz = new class extends AbstractObject {
+        $baz = new class extends AbstractObject
+        {
         };
 
-        $object = new class ($foo, $bar, $baz) extends AbstractObject {
+        $object = new class ($foo, $bar, $baz) extends AbstractObject
+        {
             protected const IGNORE_FIELDS = [
-                'p11',
-                'p18',
+                'p12',
+                'p20',
             ];
 
             protected const FIELD_ALIASES = [
-                'p12' => 'p12a',
-                'p19' => 'p19a',
+                'p13' => 'p13a',
+                'p21' => 'p21a',
             ];
 
             private $p01;
@@ -58,44 +61,46 @@ class AbstractObjectTest extends TestCase
             private $p03 = [];
             private $p04 = '';
             private $p05 = 'value';
+            private $p06;
 
-            protected $p06;
-            protected $p07 = 0;
-            protected $p08 = [];
-            protected $p09 = '';
-            protected $p10 = 'value';
+            protected $p07;
+            protected $p08 = 0;
+            protected $p09 = [];
+            protected $p10 = '';
             protected $p11 = 'value';
             protected $p12 = 'value';
+            protected $p13 = 'value';
+            protected $p14;
 
-            public $p13;
-            public $p14 = 0;
-            public $p15 = [];
-            public $p16 = '';
-            public $p17 = 'value';
-            public $p18 = 'value';
+            public $p15;
+            public $p16 = 0;
+            public $p17 = [];
+            public $p18 = '';
             public $p19 = 'value';
+            public $p20 = 'value';
+            public $p21 = 'value';
+            public $p22;
 
             public function __construct($foo, $bar, $baz)
             {
-                $this->p20 = $foo;
-                $this->p21 = $bar;
+                $this->p06 = $foo;
+                $this->p14 = $bar;
                 $this->p22 = $baz;
             }
         };
 
         $this->assertSame([
-            'p07' => 0,
-            'p08' => [],
-            'p09' => '',
-            'p10' => 'value',
-            'p12a' => 'value',
-            'p14' => 0,
-            'p15' => [],
-            'p16' => '',
-            'p17' => 'value',
-            'p19a' => 'value',
-            'p20' => ['foo' => 'foo'],
-            'p21' => ['bar' => 'bar'],
+            'p08' => 0,
+            'p09' => [],
+            'p10' => '',
+            'p11' => 'value',
+            'p13a' => 'value',
+            'p14' => ['bar' => 'bar'],
+            'p16' => 0,
+            'p17' => [],
+            'p18' => '',
+            'p19' => 'value',
+            'p21a' => 'value',
             'p22' => [],
         ], $object->toArray());
     }

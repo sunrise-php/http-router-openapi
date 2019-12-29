@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Link;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\LinkInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\LinkReference;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * LinkReferenceTest
@@ -25,9 +24,8 @@ class LinkReferenceTest extends TestCase
     {
         $reference = new LinkReference();
 
-        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(LinkInterface::class, $reference);
-        $this->assertInstanceOf(ObjectInterface::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
     }
 
     /**

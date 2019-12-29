@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Tag;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * TagTest
@@ -25,7 +24,6 @@ class TagTest extends TestCase
         $object = new Tag('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

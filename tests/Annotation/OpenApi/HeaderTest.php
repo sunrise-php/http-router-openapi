@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Header;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\HeaderInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * Import functions
@@ -30,10 +29,9 @@ class HeaderTest extends TestCase
     {
         $object = new Header();
 
-        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(HeaderInterface::class, $object);
+        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(ComponentObjectInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Object\Server;
 use Sunrise\Http\Router\OpenApi\Object\ServerVariable;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * ServerTest
@@ -25,7 +24,6 @@ class ServerTest extends TestCase
         $object = new Server('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

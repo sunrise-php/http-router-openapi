@@ -8,7 +8,6 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * ExternalDocumentationTest
@@ -24,7 +23,6 @@ class ExternalDocumentationTest extends TestCase
         $object = new ExternalDocumentation('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

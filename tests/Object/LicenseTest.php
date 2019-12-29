@@ -8,7 +8,6 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Object\License;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * LicenseTest
@@ -24,7 +23,6 @@ class LicenseTest extends TestCase
         $object = new License('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

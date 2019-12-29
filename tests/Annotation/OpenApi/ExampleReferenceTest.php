@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Example;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExampleInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExampleReference;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * ExampleReferenceTest
@@ -25,9 +24,8 @@ class ExampleReferenceTest extends TestCase
     {
         $reference = new ExampleReference();
 
-        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(ExampleInterface::class, $reference);
-        $this->assertInstanceOf(ObjectInterface::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
     }
 
     /**

@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Object\Contact;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\License;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * InfoTest
@@ -26,7 +25,6 @@ class InfoTest extends TestCase
         $object = new Info('foo', 'bar');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

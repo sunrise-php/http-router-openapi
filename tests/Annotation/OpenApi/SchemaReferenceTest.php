@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaReference;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * SchemaReferenceTest
@@ -25,9 +24,8 @@ class SchemaReferenceTest extends TestCase
     {
         $reference = new SchemaReference();
 
-        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(SchemaInterface::class, $reference);
-        $this->assertInstanceOf(ObjectInterface::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
     }
 
     /**

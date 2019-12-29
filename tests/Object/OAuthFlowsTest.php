@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Object\OAuthFlow;
 use Sunrise\Http\Router\OpenApi\Object\OAuthFlows;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * OAuthFlowsTest
@@ -25,7 +24,6 @@ class OAuthFlowsTest extends TestCase
         $object = new OAuthFlows();
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

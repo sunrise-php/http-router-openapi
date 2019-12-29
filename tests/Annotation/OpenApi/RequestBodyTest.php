@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBody;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBodyInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * Import functions
@@ -30,10 +29,9 @@ class RequestBodyTest extends TestCase
     {
         $object = new RequestBody();
 
-        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(RequestBodyInterface::class, $object);
+        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(ComponentObjectInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

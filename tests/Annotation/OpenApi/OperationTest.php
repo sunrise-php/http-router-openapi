@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\OperationInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * OperationTest
@@ -24,8 +23,7 @@ class OperationTest extends TestCase
     {
         $object = new Operation();
 
-        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(OperationInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
+        $this->assertInstanceOf(AbstractAnnotation::class, $object);
     }
 }

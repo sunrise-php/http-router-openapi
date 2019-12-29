@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Object\OAuthFlows;
 use Sunrise\Http\Router\OpenApi\Object\SecurityScheme;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * SecuritySchemeTest
@@ -27,7 +26,6 @@ class SecuritySchemeTest extends TestCase
 
         $this->assertInstanceOf(AbstractObject::class, $object);
         $this->assertInstanceOf(ComponentObjectInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

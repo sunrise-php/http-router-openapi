@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\MediaType;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\MediaTypeInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * MediaTypeTest
@@ -24,8 +23,7 @@ class MediaTypeTest extends TestCase
     {
         $object = new MediaType();
 
-        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(MediaTypeInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
+        $this->assertInstanceOf(AbstractAnnotation::class, $object);
     }
 }

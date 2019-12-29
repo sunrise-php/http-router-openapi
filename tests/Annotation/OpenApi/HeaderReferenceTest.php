@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Header;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\HeaderInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\HeaderReference;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * HeaderReferenceTest
@@ -25,9 +24,8 @@ class HeaderReferenceTest extends TestCase
     {
         $reference = new HeaderReference();
 
-        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(HeaderInterface::class, $reference);
-        $this->assertInstanceOf(ObjectInterface::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
     }
 
     /**

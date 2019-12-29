@@ -10,7 +10,6 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Link;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\LinkInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * Import functions
@@ -30,10 +29,9 @@ class LinkTest extends TestCase
     {
         $object = new Link();
 
-        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(LinkInterface::class, $object);
+        $this->assertInstanceOf(AbstractAnnotation::class, $object);
         $this->assertInstanceOf(ComponentObjectInterface::class, $object);
-        $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
     /**

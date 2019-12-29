@@ -24,8 +24,9 @@ class AbstractAnnotationTest extends TestCase
      */
     public function testContracts() : void
     {
-        $this->assertInstanceOf(ObjectInterface::class, new class extends AbstractAnnotation {
-        });
+        $annotation = $this->createMock(AbstractAnnotation::class);
+
+        $this->assertInstanceOf(ObjectInterface::class, $annotation);
     }
 
     /**
