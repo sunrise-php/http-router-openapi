@@ -1,7 +1,7 @@
 {
     "name": "sunrise/http-router-openapi",
     "homepage": "https://github.com/sunrise-php/http-router-openapi",
-    "description": "Sunrise // OpenApi (Swagger) Specification support for Sunrise HTTP router",
+    "description": "Sunrise // OpenApi (Swagger) Specification support for Sunrise router",
     "license": "MIT",
     "keywords": [
         "fenric",

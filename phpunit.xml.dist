@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
     <testsuites>
-        <testsuite name="Sunrise OAS Support for HTTP Router Test Suite">
+        <testsuite name="Sunrise // Open Api Specification Support for HTTP Router Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
