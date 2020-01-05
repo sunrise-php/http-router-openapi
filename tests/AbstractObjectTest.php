@@ -56,12 +56,12 @@ class AbstractObjectTest extends TestCase
                 'p21' => 'p21a',
             ];
 
-            /** @scrutinizer ignore-unused */ private $p01;
-            /** @scrutinizer ignore-unused */ private $p02 = 0;
-            /** @scrutinizer ignore-unused */ private $p03 = [];
-            /** @scrutinizer ignore-unused */ private $p04 = '';
-            /** @scrutinizer ignore-unused */ private $p05 = 'value';
-            /** @scrutinizer ignore-unused */ private $p06;
+            private /** @scrutinizer ignore-unused */ $p01;
+            private /** @scrutinizer ignore-unused */ $p02 = 0;
+            private /** @scrutinizer ignore-unused */ $p03 = [];
+            private /** @scrutinizer ignore-unused */ $p04 = '';
+            private /** @scrutinizer ignore-unused */ $p05 = 'value';
+            private /** @scrutinizer ignore-unused */ $p06;
 
             protected $p07;
             protected $p08 = 0;
