@@ -15,9 +15,9 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation as OperationAnnotation;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter as ParameterAnnotation;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema as SchemaAnnotation;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
@@ -45,6 +45,7 @@ class OpenApi extends AbstractObject
      * The OpenAPI Specification version that the OpenAPI document uses
      *
      * The openapi field SHOULD be used by tooling specifications and clients to interpret the OpenAPI document.
+     *
      * This is not related to the API info.version string.
      *
      * @var string
@@ -100,7 +101,9 @@ class OpenApi extends AbstractObject
      * A declaration of which security mechanisms can be used across the API
      *
      * The list of values includes alternative security requirement objects that can be used.
+     *
      * Only one of the security requirement objects need to be satisfied to authorize a request.
+     *
      * Individual operations can override this definition.
      *
      * @var SecurityRequirement[]
@@ -113,8 +116,11 @@ class OpenApi extends AbstractObject
      * A list of tags used by the specification with additional metadata
      *
      * The order of the tags can be used to reflect on their order by the parsing tools.
+     *
      * Not all tags that are used by the Operation Object must be declared.
+     *
      * The tags that are not declared MAY be organized randomly or based on the tools' logic.
+     *
      * Each tag name in the list MUST be unique.
      *
      * @var Tag[]
@@ -169,7 +175,9 @@ class OpenApi extends AbstractObject
     {
         foreach ($routes as $route) {
             $path = path_plain($route->getPath());
-            $operation = $this->createOperation($route);
+            $operation = $this->fetchOperation($route);
+
+            $this->addComponentObject(...$operation->getReferencedObjects($this->annotationReader));
 
             foreach ($route->getMethods() as $method) {
                 /** @see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#fixed-fields-7 */
@@ -227,30 +235,40 @@ class OpenApi extends AbstractObject
     }
 
     /**
+     * Fetches OAS Operation Object from the given route
+     *
+     * This method always returns an instance of the Operation Object,
+     * even if the given route doesn't contain it.
+     *
      * @param RouteInterface $route
      *
-     * @return Operation
+     * @return OperationAnnotation
      */
-    private function createOperation(RouteInterface $route) : Operation
+    private function fetchOperation(RouteInterface $route) : OperationAnnotation
     {
-        $source = new ReflectionClass($route->getRequestHandler());
+        $operation = $this->annotationReader->getClassAnnotation(
+            new ReflectionClass($route->getRequestHandler()),
+            OperationAnnotation::class
+        );
 
-        $operation = $this->annotationReader->getClassAnnotation($source, Operation::class) ?? new Operation();
+        if (null === $operation) {
+            $operation = new OperationAnnotation();
+        }
 
-        $operation->operationId = $operation->operationId ?? $route->getName();
-
-        $this->addComponentObject(...$operation->getReferencedObjects($this->annotationReader));
+        if (null === $operation->operationId) {
+            $operation->operationId = $route->getName();
+        }
 
         $attributes = path_parse($route->getPath());
 
         foreach ($attributes as $attribute) {
-            $parameter = new Parameter();
+            $parameter = new ParameterAnnotation();
             $parameter->in = 'path';
             $parameter->name = $attribute['name'];
             $parameter->required = !$attribute['isOptional'];
 
             if (isset($attribute['pattern'])) {
-                $parameter->schema = new Schema();
+                $parameter->schema = new SchemaAnnotation();
                 $parameter->schema->type = 'string';
                 $parameter->schema->pattern = $attribute['pattern'];
             }
