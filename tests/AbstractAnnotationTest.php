@@ -11,7 +11,6 @@ use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 use Sunrise\Http\Router\OpenApi\Tests\Fixture;
-use ReflectionClass;
 
 /**
  * AbstractAnnotationTest
@@ -56,12 +55,29 @@ class AbstractAnnotationTest extends TestCase
             }
         };
 
-        $expected = $this->createSimpleAnnotationReader()
-        ->getClassAnnotation(new ReflectionClass(Fixture\PetStore\Entity\Pet::class), Schema::class)
-        ->toArray();
+        $referencedObjects = $annotation->getReferencedObjects(
+            $this->createSimpleAnnotationReader()
+        );
 
-        $referencedObjects = $annotation->getReferencedObjects($this->createSimpleAnnotationReader());
+        $this->assertSame([
+            'properties' => [
+                'id' => [
+                    'format' => 'int64',
+                    'type' => 'integer',
+                ],
+                'name' => [
+                    'type' => 'string',
+                ],
+                'tag' => [
+                    'type' => 'string',
+                ],
+            ],
+            'required' => [
+                'id',
+                'name',
+            ],
+            'type' => 'object',
 
-        $this->assertSame($expected, $referencedObjects[0]->toArray());
+        ], reset($referencedObjects)->toArray());
     }
 }
