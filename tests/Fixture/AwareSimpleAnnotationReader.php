@@ -6,6 +6,7 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Fixture;
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Sunrise\Http\Router\OpenApi\OpenApi;
 
 /**
  * AwareSimpleAnnotationReader
@@ -19,7 +20,7 @@ trait AwareSimpleAnnotationReader
     private function createSimpleAnnotationReader() : SimpleAnnotationReader
     {
         $annotationReader = new SimpleAnnotationReader();
-        $annotationReader->addNamespace('Sunrise\Http\Router\OpenApi\Annotation');
+        $annotationReader->addNamespace(OpenApi::ANNOTATIONS_NAMESPACE);
 
         return $annotationReader;
     }

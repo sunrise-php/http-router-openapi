@@ -42,6 +42,11 @@ class OpenApi extends AbstractObject
 {
 
     /**
+     * @var string
+     */
+    public const ANNOTATIONS_NAMESPACE = 'Sunrise\Http\Router\OpenApi\Annotation';
+
+    /**
      * The OpenAPI Specification version that the OpenAPI document uses
      *
      * The openapi field SHOULD be used by tooling specifications and clients to interpret the OpenAPI document.
@@ -151,7 +156,7 @@ class OpenApi extends AbstractObject
         $this->info = $info;
 
         $this->annotationReader = new SimpleAnnotationReader();
-        $this->annotationReader->addNamespace('Sunrise\Http\Router\OpenApi\Annotation');
+        $this->annotationReader->addNamespace(self::ANNOTATIONS_NAMESPACE);
     }
 
     /**
