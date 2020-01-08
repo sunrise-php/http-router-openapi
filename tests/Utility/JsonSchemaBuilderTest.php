@@ -339,11 +339,11 @@ class JsonSchemaBuilderTest extends TestCase
         } catch (UnsupportedMediaTypeException $e) {
             $this->assertSame(
                 'application/json',
-                $e->getUnsupportedMediaType()
+                $e->getType()
             );
 
             $this->assertSame([
-            ], $e->getSupportedMediaTypes());
+            ], $e->getSupportedTypes());
 
             throw $e;
         }
@@ -386,13 +386,13 @@ class JsonSchemaBuilderTest extends TestCase
         } catch (UnsupportedMediaTypeException $e) {
             $this->assertSame(
                 'application/schema+json',
-                $e->getUnsupportedMediaType()
+                $e->getType()
             );
 
             $this->assertSame([
                 'application/json',
                 'application/xml',
-            ], $e->getSupportedMediaTypes());
+            ], $e->getSupportedTypes());
 
             throw $e;
         }

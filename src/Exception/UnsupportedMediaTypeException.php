@@ -12,6 +12,11 @@
 namespace Sunrise\Http\Router\OpenApi\Exception;
 
 /**
+ * Import functions
+ */
+use function sprintf;
+
+/**
  * UnsupportedMediaTypeException
  */
 class UnsupportedMediaTypeException extends Exception
@@ -20,40 +25,43 @@ class UnsupportedMediaTypeException extends Exception
     /**
      * @var string
      */
-    private $unsupportedMediaType;
+    private $type;
 
     /**
      * @var string[]
      */
-    private $supportedMediaTypes;
+    private $supported;
 
     /**
-     * @param string $unsupportedMediaType
-     * @param string[] $supportedMediaTypes
+     * @param string $type
+     * @param string[] $supported
      */
-    public function __construct(string $unsupportedMediaType, array $supportedMediaTypes)
+    public function __construct(string $type, array $supported)
     {
-        $message = 'Media type "%s" is not supported for this operation.';
+        $format = 'Media type "%s" is not supported for this operation.';
+        parent::__construct(sprintf($format, $type));
 
-        parent::__construct(sprintf($message, $unsupportedMediaType));
-
-        $this->unsupportedMediaType = $unsupportedMediaType;
-        $this->supportedMediaTypes = $supportedMediaTypes;
+        $this->type = $type;
+        $this->supported = $supported;
     }
 
     /**
+     * Gets a type
+     *
      * @return string
      */
-    public function getUnsupportedMediaType() : string
+    public function getType() : string
     {
-        return $this->unsupportedMediaType;
+        return $this->type;
     }
 
     /**
+     * Gets supported types
+     *
      * @return string[]
      */
-    public function getSupportedMediaTypes() : array
+    public function getSupportedTypes() : array
     {
-        return $this->supportedMediaTypes;
+        return $this->supported;
     }
 }
