@@ -22,7 +22,7 @@
     "require": {
         "php": "^7.1",
         "doctrine/annotations": "^1.6",
-        "sunrise/http-router": "^2.0"
+        "sunrise/http-router": "^2.1"
     },
     "require-dev": {
         "phpbench/phpbench": "0.16.10",
