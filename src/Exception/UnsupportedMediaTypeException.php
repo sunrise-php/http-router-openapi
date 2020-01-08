@@ -12,14 +12,9 @@
 namespace Sunrise\Http\Router\OpenApi\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * UnsupportedMediaTypeException
  */
-class UnsupportedMediaTypeException extends RuntimeException implements ExceptionInterface
+class UnsupportedMediaTypeException extends Exception
 {
 
     /**
