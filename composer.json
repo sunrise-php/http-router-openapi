@@ -27,7 +27,8 @@
     "require-dev": {
         "phpbench/phpbench": "0.16.10",
         "phpunit/phpunit": "7.5.18",
-        "sunrise/coding-standard": "1.0.0"
+        "sunrise/coding-standard": "1.0.0",
+        "justinrainbow/json-schema": "^5.2"
     },
     "autoload": {
         "psr-4": {
