@@ -35,6 +35,28 @@ use ReflectionClass;
  *     ),
  *   },
  * )
+ *
+ * @OpenApi\Response(
+ *   refName="ReferencedResponse",
+ *   description="OK",
+ *   content={
+ *     "application/json"=@OpenApi\MediaType(
+ *       schema=@OpenApi\Schema(
+ *         type="object",
+ *         properties={
+ *           "foo"=@OpenApi\SchemaReference(
+ *             class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+ *             property="foo",
+ *           ),
+ *           "bar"=@OpenApi\SchemaReference(
+ *             class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+ *             property="bar",
+ *           ),
+ *         },
+ *       ),
+ *     ),
+ *   },
+ * )
  */
 class JsonSchemaBuilderTest extends TestCase
 {
@@ -88,9 +110,7 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertSame([
@@ -142,13 +162,19 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertSame([
             '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'definitions' => [
+                'ReferencedFooProperty' => [
+                    'type' => 'integer',
+                ],
+                'ReferencedBarProperty' => [
+                    'type' => 'string',
+                ],
+            ],
             'properties' => [
                 'foo' => [
                     '$ref' => '#/definitions/ReferencedFooProperty',
@@ -158,14 +184,6 @@ class JsonSchemaBuilderTest extends TestCase
                 ],
             ],
             'type' => 'object',
-            'definitions' => [
-                'ReferencedFooProperty' => [
-                    'type' => 'integer',
-                ],
-                'ReferencedBarProperty' => [
-                    'type' => 'string',
-                ],
-            ],
         ], $jsonSchema);
     }
 
@@ -191,13 +209,19 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertSame([
             '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'definitions' => [
+                'ReferencedFooProperty' => [
+                    'type' => 'integer',
+                ],
+                'ReferencedBarProperty' => [
+                    'type' => 'string',
+                ],
+            ],
             'properties' => [
                 'foo' => [
                     '$ref' => '#/definitions/ReferencedFooProperty',
@@ -207,14 +231,6 @@ class JsonSchemaBuilderTest extends TestCase
                 ],
             ],
             'type' => 'object',
-            'definitions' => [
-                'ReferencedFooProperty' => [
-                    'type' => 'integer',
-                ],
-                'ReferencedBarProperty' => [
-                    'type' => 'string',
-                ],
-            ],
         ], $jsonSchema);
     }
 
@@ -228,9 +244,7 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertNull($jsonSchema);
@@ -255,9 +269,7 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertNull($jsonSchema);
@@ -288,9 +300,7 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertNull($jsonSchema);
@@ -319,7 +329,6 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
 
         $this->expectException(UnsupportedMediaTypeException::class);
@@ -367,7 +376,6 @@ class JsonSchemaBuilderTest extends TestCase
         };
 
         $classReflection = new ReflectionClass($class);
-
         $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
 
         $this->expectException(UnsupportedMediaTypeException::class);
@@ -388,5 +396,221 @@ class JsonSchemaBuilderTest extends TestCase
 
             throw $e;
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBody() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   responses={
+         *     200=@OpenApi\Response(
+         *       description="OK",
+         *       content={
+         *         "application/json"=@OpenApi\MediaType(
+         *           schema=@OpenApi\Schema(
+         *             type="object",
+         *             properties={
+         *               "foo"=@OpenApi\Schema(
+         *                 type="string",
+         *               ),
+         *             },
+         *           ),
+         *         ),
+         *       },
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(200, 'application/json');
+
+        $this->assertSame([
+            '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'properties' => [
+                'foo' => [
+                    'type' => 'string',
+                ],
+            ],
+            'type' => 'object',
+        ], $jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBodyWithReferencesToSchemas() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   responses={
+         *     200=@OpenApi\Response(
+         *       description="OK",
+         *       content={
+         *         "application/json"=@OpenApi\MediaType(
+         *           schema=@OpenApi\Schema(
+         *             type="object",
+         *             properties={
+         *               "foo"=@OpenApi\SchemaReference(
+         *                 class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *                 property="foo",
+         *               ),
+         *               "bar"=@OpenApi\SchemaReference(
+         *                 class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *                 property="bar",
+         *               ),
+         *             },
+         *           ),
+         *         ),
+         *       },
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(200, 'application/json');
+
+        $this->assertSame([
+            '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'definitions' => [
+                'ReferencedFooProperty' => [
+                    'type' => 'integer',
+                ],
+                'ReferencedBarProperty' => [
+                    'type' => 'string',
+                ],
+            ],
+            'properties' => [
+                'foo' => [
+                    '$ref' => '#/definitions/ReferencedFooProperty',
+                ],
+                'bar' => [
+                    '$ref' => '#/definitions/ReferencedBarProperty',
+                ],
+            ],
+            'type' => 'object',
+        ], $jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBodyWithReferenceToResponse() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   responses={
+         *     200=@OpenApi\ResponseReference(
+         *       class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(200, 'application/json');
+
+        $this->assertSame([
+            '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'definitions' => [
+                'ReferencedFooProperty' => [
+                    'type' => 'integer',
+                ],
+                'ReferencedBarProperty' => [
+                    'type' => 'string',
+                ],
+            ],
+            'properties' => [
+                'foo' => [
+                    '$ref' => '#/definitions/ReferencedFooProperty',
+                ],
+                'bar' => [
+                    '$ref' => '#/definitions/ReferencedBarProperty',
+                ],
+            ],
+            'type' => 'object',
+        ], $jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBodyWhenOperationUnknown() : void
+    {
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(200, 'application/json');
+
+        $this->assertNull($jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBodyWhenStatusCodeUnsupported() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   responses={
+         *     200=@OpenApi\ResponseReference(
+         *       class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(201, 'application/json');
+
+        $this->assertNull($jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForResponseBodyWhenMediaTypeUnsupported() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   responses={
+         *     200=@OpenApi\ResponseReference(
+         *       class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forResponseBody(200, 'application/schema+json');
+
+        $this->assertNull($jsonSchema);
     }
 }
