@@ -20,8 +20,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\BadRequestException;
-use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException as HttpUnsupportedMediaTypeException;
-use Sunrise\Http\Router\OpenApi\Exception\UnsupportedMediaTypeException;
+use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException;
+use Sunrise\Http\Router\OpenApi\Exception\UnsupportedMediaTypeException as LocalUnsupportedMediaTypeException;
 use Sunrise\Http\Router\OpenApi\Utility\JsonSchemaBuilder;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
@@ -43,6 +43,10 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
 
     /**
      * Constructor of the class
+     *
+     * @throws RuntimeException
+     *
+     * @codeCoverageIgnore
      */
     public function __construct()
     {
@@ -52,6 +56,8 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
     }
 
     /**
+     * {@inheritDoc}
+     *
      * @param ServerRequestInterface $request
      * @param RequestHandlerInterface $handler
      *
@@ -71,7 +77,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
      *
      * @return null|ReflectionClass
      */
-    private function fetchOperationSource(ServerRequestInterface $request) : ?ReflectionClass
+    protected function fetchOperationSource(ServerRequestInterface $request) : ?ReflectionClass
     {
         $route = $request->getAttribute(Route::ATTR_NAME_FOR_ROUTE);
 
@@ -93,7 +99,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
      *
      * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
      */
-    private function fetchMimeType(ServerRequestInterface $request) : string
+    protected function fetchMimeType(ServerRequestInterface $request) : string
     {
         $result = $request->getHeaderLine('Content-Type');
         $semicolon = strpos($result, ';');
@@ -106,13 +112,13 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Validates the given request
+     * Tries to determine a JSON schema for the request body
      *
      * @param ServerRequestInterface $request
      *
      * @return mixed
      */
-    private function validate(ServerRequestInterface $request)
+    protected function fetchJsonSchema(ServerRequestInterface $request)
     {
         $operationSource = $this->fetchOperationSource($request);
         if (!$operationSource) {
@@ -126,10 +132,25 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
 
         $builder = new JsonSchemaBuilder($operationSource);
 
+        return $builder->forRequestBody($mimeType);
+    }
+
+    /**
+     * Validates the given request
+     *
+     * @param ServerRequestInterface $request
+     *
+     * @return void
+     *
+     * @throws BadRequestException
+     * @throws UnsupportedMediaTypeException
+     */
+    protected function validate(ServerRequestInterface $request) : void
+    {
         try {
-            $jsonSchema = $builder->forRequestBody($mimeType);
-        } catch (UnsupportedMediaTypeException $e) {
-            throw new HttpUnsupportedMediaTypeException($e->getMessage(), [
+            $jsonSchema = $this->fetchJsonSchema($request);
+        } catch (LocalUnsupportedMediaTypeException $e) {
+            throw new UnsupportedMediaTypeException($e->getMessage(), [
                 'type' => $e->getType(),
                 'supported' => $e->getSupportedTypes(),
             ], $e->getCode(), $e);
@@ -147,6 +168,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
 
         if (!$validator->isValid()) {
             throw new BadRequestException('', [
+                'jsonSchema' => $jsonSchema,
                 'violations' => $validator->getErrors(),
             ]);
         }
