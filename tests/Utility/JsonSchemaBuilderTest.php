@@ -266,37 +266,6 @@ class JsonSchemaBuilderTest extends TestCase
     /**
      * @return void
      */
-    public function testBuildJsonSchemaForRequestBodyWhenRequestBodyDoesntContainContents() : void
-    {
-        /**
-         * @OpenApi\Operation(
-         *   requestBody=@OpenApi\RequestBody(
-         *     content={
-         *     },
-         *   ),
-         *   responses={
-         *     200=@OpenApi\Response(
-         *       description="OK",
-         *     ),
-         *   },
-         * )
-         */
-        $class = new class
-        {
-        };
-
-        $classReflection = new ReflectionClass($class);
-
-        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
-
-        $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
-
-        $this->assertNull($jsonSchema);
-    }
-
-    /**
-     * @return void
-     */
     public function testBuildJsonSchemaForRequestBodyWhenRequestBodyContainsContentWithoutSchema() : void
     {
         /**
@@ -325,6 +294,50 @@ class JsonSchemaBuilderTest extends TestCase
         $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
 
         $this->assertNull($jsonSchema);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForRequestBodyWhenRequestBodyContainsEmptyContents() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   requestBody=@OpenApi\RequestBody(
+         *     content={
+         *     },
+         *   ),
+         *   responses={
+         *     200=@OpenApi\Response(
+         *       description="OK",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+
+        $this->expectException(UnsupportedMediaTypeException::class);
+        $this->expectExceptionMessage('Media type "application/json" is not supported for this operation.');
+
+        try {
+            $jsonSchemaBuilder->forRequestBody('application/json');
+        } catch (UnsupportedMediaTypeException $e) {
+            $this->assertSame(
+                'application/json',
+                $e->getUnsupportedMediaType()
+            );
+
+            $this->assertSame([
+            ], $e->getSupportedMediaTypes());
+
+            throw $e;
+        }
     }
 
     /**

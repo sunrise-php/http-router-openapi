@@ -91,10 +91,6 @@ class JsonSchemaBuilder
             }
         }
 
-        if (empty($requestBody->content)) {
-            return null;
-        }
-
         if (empty($requestBody->content[$mediaType])) {
             throw new UnsupportedMediaTypeException($mediaType, array_keys($requestBody->content));
         }
