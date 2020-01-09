@@ -37,6 +37,8 @@ use function substr;
 
 /**
  * RequestBodyValidationMiddleware
+ *
+ * Don't use this middleware globally!
  */
 class RequestBodyValidationMiddleware implements MiddlewareInterface
 {
@@ -121,16 +123,15 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
     protected function fetchJsonSchema(ServerRequestInterface $request)
     {
         $operationSource = $this->fetchOperationSource($request);
-        if (!$operationSource) {
-            return null;
-        }
 
-        $mimeType = $this->fetchMimeType($request);
-        if (!$mimeType) {
+        // it is not recommended to use this middleware globally...
+        if (null === $operationSource) {
             return null;
         }
 
         $builder = new JsonSchemaBuilder($operationSource);
+
+        $mimeType = $this->fetchMimeType($request);
 
         return $builder->forRequestBody($mimeType);
     }
@@ -167,7 +168,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
         $validator->validate($payload, $jsonSchema);
 
         if (!$validator->isValid()) {
-            throw new BadRequestException('', [
+            throw new BadRequestException('The request body is not valid for this resource.', [
                 'jsonSchema' => $jsonSchema,
                 'violations' => $validator->getErrors(),
             ]);
