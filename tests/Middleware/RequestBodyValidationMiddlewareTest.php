@@ -184,26 +184,44 @@ class RequestBodyValidationMiddlewareTest extends TestCase
     }
 
     /**
+     * @param mixed $payload
+     *
      * @return void
+     *
+     * @dataProvider invalidPayloadProvider
      */
-    public function testProcessWithInvalidPayload() : void
+    public function testProcessWithInvalidPayload($payload) : void
     {
         $route = $this->createRoute();
+        $attributes = [Route::ATTR_NAME_FOR_ROUTE => $route];
+        $headers = ['Content-Type' => 'application/json'];
 
-        $request = $this->createServerRequest([
-            Route::ATTR_NAME_FOR_ROUTE => $route,
-        ], [
-            'Content-Type' => 'application/json',
-        ], [
-            'foo' => 'a',
-        ]);
-
+        $request = $this->createServerRequest($attributes, $headers, $payload);
         $middleware = new RequestBodyValidationMiddleware();
 
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('The request body is not valid for this resource.');
 
         $middleware->process($request, $route->getRequestHandler());
+    }
+
+    /**
+     * @return array
+     */
+    public function invalidPayloadProvider() : array
+    {
+        return [
+            [null],
+            [false],
+            [''],
+            [[]],
+            [new \stdClass()],
+            [['foo' => null]],
+            [['foo' => '']],
+            [['foo' => '1']],
+            [['foo' => '12']],
+            [['foo' => '1234567890']],
+        ];
     }
 
     /**
