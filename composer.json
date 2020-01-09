@@ -22,12 +22,13 @@
     "require": {
         "php": "^7.1",
         "doctrine/annotations": "^1.6",
-        "sunrise/http-router": "^2.0"
+        "sunrise/http-router": "^2.1"
     },
     "require-dev": {
         "phpbench/phpbench": "0.16.10",
         "phpunit/phpunit": "7.5.20",
-        "sunrise/coding-standard": "1.0.0"
+        "sunrise/coding-standard": "1.0.0",
+        "justinrainbow/json-schema": "^5.2"
     },
     "autoload": {
         "psr-4": {

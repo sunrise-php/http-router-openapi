@@ -12,8 +12,13 @@
 namespace Sunrise\Http\Router\OpenApi\Exception;
 
 /**
- * InvalidReferenceException
+ * Import classes
  */
-class InvalidReferenceException extends Exception
+use RuntimeException;
+
+/**
+ * Exception
+ */
+class Exception extends RuntimeException implements ExceptionInterface
 {
 }
