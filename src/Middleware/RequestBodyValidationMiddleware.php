@@ -32,6 +32,8 @@ use RuntimeException;
  * Import functions
  */
 use function class_exists;
+use function json_decode;
+use function json_encode;
 use function strpos;
 use function substr;
 
@@ -161,8 +163,8 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
             return;
         }
 
-        $payload = (array) $request->getParsedBody();
-        $payload = Validator::arrayToObjectRecursive($payload);
+        $payload = json_encode($request->getParsedBody());
+        $payload = json_decode($payload);
 
         $validator = new Validator();
         $validator->validate($payload, $jsonSchema);
