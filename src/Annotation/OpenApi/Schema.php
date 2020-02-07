@@ -39,9 +39,19 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     protected const IGNORE_FIELDS = ['refName'];
 
     /**
+     * {@inheritDoc}
+     */
+    protected const FIELD_ALIASES = ['allowAdditionalProperties' => 'additionalProperties'];
+
+    /**
      * @var string
      */
     public $refName;
+
+    /**
+     * @var bool
+     */
+    public $allowAdditionalProperties;
 
     /**
      * @var \Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface
