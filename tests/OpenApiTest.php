@@ -319,4 +319,30 @@ class OpenApiTest extends TestCase
             ],
         ], $object->toArray());
     }
+
+    /**
+     * @return void
+     */
+    public function testNotIncludeUndescribedRoutes() : void
+    {
+        $handler = $this->createMock(RequestHandlerInterface::class);
+
+        $route = $this->createMock(RouteInterface::class);
+        $route->method('getRequestHandler')->willReturn($handler);
+        $route->method('getName')->willReturn('foo');
+        $route->method('getMethods')->willReturn(['GET']);
+        $route->method('getPath')->willReturn('/foo');
+
+        $object = new OpenApi(new Info('foo', 'bar'));
+        $object->includeUndescribedOperations(false);
+        $object->addRoute($route);
+
+        $this->assertSame([
+            'openapi' => '3.0.2',
+            'info' => [
+                'title' => 'foo',
+                'version' => 'bar',
+            ],
+        ], $object->toArray());
+    }
 }

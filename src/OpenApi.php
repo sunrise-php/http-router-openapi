@@ -149,6 +149,11 @@ class OpenApi extends AbstractObject
     private $annotationReader;
 
     /**
+     * @var bool
+     */
+    private $includeUndescribedOperations = true;
+
+    /**
      * @param Info $info
      */
     public function __construct(Info $info)
@@ -157,6 +162,16 @@ class OpenApi extends AbstractObject
 
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace(self::ANNOTATIONS_NAMESPACE);
+    }
+
+    /**
+     * @param bool $value
+     *
+     * @return void
+     */
+    public function includeUndescribedOperations(bool $value) : void
+    {
+        $this->includeUndescribedOperations = $value;
     }
 
     /**
@@ -181,6 +196,10 @@ class OpenApi extends AbstractObject
         foreach ($routes as $route) {
             $path = path_plain($route->getPath());
             $operation = $this->fetchOperation($route);
+
+            if (null === $operation) {
+                continue;
+            }
 
             $this->addComponentObject(...$operation->getReferencedObjects($this->annotationReader));
 
@@ -245,11 +264,14 @@ class OpenApi extends AbstractObject
      * This method always returns an instance of the Operation Object,
      * even if the given route doesn't contain it.
      *
+     * If you do not want to include undescribed operations,
+     * use the `$openapi->includeUndescribedOperations(false)` method.
+     *
      * @param RouteInterface $route
      *
-     * @return OperationAnnotation
+     * @return null|OperationAnnotation
      */
-    private function fetchOperation(RouteInterface $route) : OperationAnnotation
+    private function fetchOperation(RouteInterface $route) : ?OperationAnnotation
     {
         $operation = $this->annotationReader->getClassAnnotation(
             new ReflectionClass($route->getRequestHandler()),
@@ -257,6 +279,10 @@ class OpenApi extends AbstractObject
         );
 
         if (null === $operation) {
+            if (false === $this->includeUndescribedOperations) {
+                return null;
+            }
+
             $operation = new OperationAnnotation();
         }
 
