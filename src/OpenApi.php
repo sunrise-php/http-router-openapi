@@ -31,6 +31,7 @@ use ReflectionClass;
  */
 use function Sunrise\Http\Router\path_parse;
 use function Sunrise\Http\Router\path_plain;
+use function json_encode;
 use function strtolower;
 
 /**
@@ -165,6 +166,16 @@ class OpenApi extends AbstractObject
     }
 
     /**
+     * @param int $options
+     *
+     * @return string
+     */
+    public function toJson(int $options = 0) : string
+    {
+        return json_encode($this->toArray(), $options);
+    }
+
+    /**
      * @param bool $value
      *
      * @return void
@@ -288,6 +299,27 @@ class OpenApi extends AbstractObject
 
         if (null === $operation->operationId) {
             $operation->operationId = $route->getName();
+        }
+
+        if (null === $operation->tags) {
+            $routeTags = $route->getTags();
+            if ([] !== $routeTags) {
+                $operation->tags = $routeTags;
+            }
+        }
+
+        if (null === $operation->summary) {
+            $routeSummary = $route->getSummary();
+            if ('' !== $routeSummary) {
+                $operation->summary = $routeSummary;
+            }
+        }
+
+        if (null === $operation->description) {
+            $routeDescription = $route->getDescription();
+            if ('' !== $routeDescription) {
+                $operation->description = $routeDescription;
+            }
         }
 
         $attributes = path_parse($route->getPath());

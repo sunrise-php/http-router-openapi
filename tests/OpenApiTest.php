@@ -345,4 +345,54 @@ class OpenApiTest extends TestCase
             ],
         ], $object->toArray());
     }
+
+    /**
+     * @return void
+     */
+    public function testRouteData() : void
+    {
+        $handler = $this->createMock(RequestHandlerInterface::class);
+
+        $route = $this->createMock(RouteInterface::class);
+        $route->method('getRequestHandler')->willReturn($handler);
+        $route->method('getName')->willReturn('foo');
+        $route->method('getMethods')->willReturn(['GET']);
+        $route->method('getPath')->willReturn('/foo');
+        $route->method('getTags')->willReturn(['foo', 'bar']);
+        $route->method('getSummary')->willReturn('summary of the route');
+        $route->method('getDescription')->willReturn('description of the route');
+
+        $object = new OpenApi(new Info('foo', 'bar'));
+        $object->addRoute($route);
+
+        $this->assertSame([
+            'openapi' => '3.0.2',
+            'info' => [
+                'title' => 'foo',
+                'version' => 'bar',
+            ],
+            'paths' => [
+                '/foo' => [
+                    'get' => [
+                        'operationId' => 'foo',
+                        'tags' => ['foo', 'bar'],
+                        'summary' => 'summary of the route',
+                        'description' => 'description of the route',
+                    ],
+                ],
+            ],
+        ], $object->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testJson() : void
+    {
+        $object = new OpenApi(new Info('foo', 'bar'));
+
+        $expected = json_encode($object->toArray(), \JSON_PRETTY_PRINT);
+
+        $this->assertSame($expected, $object->toJson(\JSON_PRETTY_PRINT));
+    }
 }
