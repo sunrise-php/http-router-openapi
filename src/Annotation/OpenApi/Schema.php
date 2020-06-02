@@ -230,6 +230,15 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $properties;
 
     /**
+     * [!] Isn't standard property
+     *
+     * @var array<\Sunrise\Http\Router\OpenApi\Annotation\OpenApi\SchemaInterface>
+     *
+     * @since 1.4.1
+     */
+    public $patternProperties;
+
+    /**
      * @var bool
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemareadonly
