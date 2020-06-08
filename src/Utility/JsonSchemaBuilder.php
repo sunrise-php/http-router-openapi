@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\OpenApi\Utility;
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterReference;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBodyReference;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ResponseReference;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedMediaTypeException;
@@ -26,6 +27,7 @@ use ReflectionClass;
  * Import functions
  */
 use function array_keys;
+use function array_walk;
 use function array_walk_recursive;
 use function str_replace;
 
@@ -63,6 +65,60 @@ class JsonSchemaBuilder
 
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace(OpenApi::ANNOTATIONS_NAMESPACE);
+    }
+
+    /**
+     * Builds a JSON schema for a request query parameters
+     *
+     * @return null|array
+     */
+    public function forRequestQueryParams() : ?array
+    {
+        $operation = $this->annotationReader->getClassAnnotation($this->operationSource, Operation::class);
+        if (empty($operation->parameters)) {
+            return null;
+        }
+
+        $jsonSchema = $this->jsonSchemaBlank;
+        $jsonSchema['type'] = 'object';
+        $jsonSchema['required'] = [];
+        $jsonSchema['properties'] = [];
+        $jsonSchema['definitions'] = [];
+
+        foreach ($operation->parameters as $parameter) {
+            if ($parameter instanceof ParameterReference) {
+                $parameter = $parameter->getAnnotation($this->annotationReader);
+            }
+
+            if (!('query' === $parameter->in)) {
+                continue;
+            }
+
+            if ($parameter->required) {
+                $jsonSchema['required'][] = $parameter->name;
+            }
+
+            if ($parameter->schema) {
+                $jsonSchema['properties'][$parameter->name] = $parameter->schema;
+            }
+        }
+
+        if (empty($jsonSchema['required']) && empty($jsonSchema['properties'])) {
+            return null;
+        }
+
+        $referencedObjects = $operation->getReferencedObjects($this->annotationReader);
+        foreach ($referencedObjects as $referencedObject) {
+            if ('schemas' === $referencedObject->getComponentName()) {
+                $jsonSchema['definitions'][$referencedObject->getReferenceName()] = $referencedObject->toArray();
+            }
+        }
+
+        array_walk($jsonSchema['properties'], function (&$schema) {
+            $schema = $schema->toArray();
+        });
+
+        return $this->fixReferences($jsonSchema);
     }
 
     /**
