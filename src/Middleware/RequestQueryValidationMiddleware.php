@@ -96,7 +96,7 @@ class RequestQueryValidationMiddleware implements MiddlewareInterface
         }
 
         $payload = json_encode($request->getQueryParams());
-        $payload = json_decode($payload);
+        $payload = (object) json_decode($payload);
 
         $validator = new Validator();
         $validator->validate($payload, $jsonSchema);
