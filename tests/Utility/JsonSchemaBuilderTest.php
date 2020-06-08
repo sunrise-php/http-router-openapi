@@ -78,6 +78,86 @@ class JsonSchemaBuilderTest extends TestCase
     private $bar;
 
     /**
+     * @OpenApi\Schema(
+     *   refName="ReferencedBazProperty",
+     *   type="string",
+     * )
+     */
+    private $baz;
+
+    /**
+     * @return void
+     */
+    public function testBuildJsonSchemaForRequestQuery() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   parameters={
+         *     @OpenApi\Parameter(
+         *       in="cookie",
+         *       name="foo",
+         *       schema=@OpenApi\Schema(
+         *         type="string",
+         *       ),
+         *     ),
+         *     @OpenApi\Parameter(
+         *       in="query",
+         *       name="bar",
+         *       schema=@OpenApi\Schema(
+         *         type="string",
+         *       ),
+         *     ),
+         *     @OpenApi\Parameter(
+         *       in="query",
+         *       name="baz",
+         *       schema=@OpenApi\SchemaReference(
+         *         class="Sunrise\Http\Router\OpenApi\Tests\Utility\JsonSchemaBuilderTest",
+         *         property="baz",
+         *       ),
+         *     ),
+         *   },
+         *   responses={
+         *     200: @OpenApi\Response(
+         *       description="OK",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forRequestQueryParams();
+
+        $this->assertSame([
+            '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'type' => 'object',
+            'required' => [],
+            'properties' => [
+                'bar' => [
+                    'type' => 'string',
+                ],
+                'baz' => [
+                    '$ref' => '#/definitions/ReferencedBazProperty',
+                ],
+            ],
+            'definitions' => [
+                'ReferencedBazProperty' => [
+                    'type' => 'string',
+                ],
+            ],
+        ], $jsonSchema);
+
+        $classReflection = new ReflectionClass(new \stdClass);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forRequestQueryParams();
+
+        $this->assertNull($jsonSchema);
+    }
+
+    /**
      * @return void
      */
     public function testBuildJsonSchemaForRequestBody() : void
