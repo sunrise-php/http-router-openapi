@@ -159,12 +159,36 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
             ], $e->getCode(), $e);
         }
 
-        if (null === $jsonSchema) {
+        if (false === isset($jsonSchema, $jsonSchema['type'])) {
             return;
         }
 
-        $payload = json_encode($request->getParsedBody());
-        $payload = json_decode($payload);
+        $payload = null;
+        $parsedBody = $request->getParsedBody();
+
+        switch ($jsonSchema['type']) {
+            case 'array':
+                if ([] === $parsedBody) {
+                    $payload = [];
+                } else {
+                    $payload = json_encode($parsedBody);
+                    $payload = (array) json_decode($payload);
+                }
+                break;
+
+            case 'object':
+                if ([] === $parsedBody) {
+                    $payload = new \stdClass();
+                } else {
+                    $payload = json_encode($parsedBody);
+                    $payload = (object) json_decode($payload);
+                }
+                break;
+
+            case 'string':
+                $payload = (string) $request->getBody();
+                break;
+        }
 
         $validator = new Validator();
         $validator->validate($payload, $jsonSchema);
