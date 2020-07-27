@@ -46,6 +46,11 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
 {
 
     /**
+     * @var bool
+     */
+    private $useCache = false;
+
+    /**
      * Constructor of the class
      *
      * @throws RuntimeException
@@ -57,6 +62,14 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
         if (!class_exists('JsonSchema\Validator')) {
             throw new RuntimeException('To use request body validation, install the "justinrainbow/json-schema"');
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function useCache() : void
+    {
+        $this->useCache = true;
     }
 
     /**
@@ -75,27 +88,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Tries to determine the reflection of an object that contains the `@OpenApi\Operation()` annotation
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return null|ReflectionClass
-     */
-    protected function fetchOperationSource(ServerRequestInterface $request) : ?ReflectionClass
-    {
-        $route = $request->getAttribute(Route::ATTR_NAME_FOR_ROUTE);
-
-        if ($route instanceof RouteInterface) {
-            return new ReflectionClass(
-                $route->getRequestHandler()
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * Tries to determine a MIME type for the request body
+     * Tries to determine a media type for the request body
      *
      * @param ServerRequestInterface $request
      *
@@ -103,7 +96,7 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
      *
      * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
      */
-    protected function fetchMimeType(ServerRequestInterface $request) : string
+    protected function fetchMediaType(ServerRequestInterface $request) : string
     {
         $result = $request->getHeaderLine('Content-Type');
         $semicolon = strpos($result, ';');
@@ -113,29 +106,6 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
         }
 
         return $result;
-    }
-
-    /**
-     * Tries to determine a JSON schema for the request body
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return mixed
-     */
-    protected function fetchJsonSchema(ServerRequestInterface $request)
-    {
-        $operationSource = $this->fetchOperationSource($request);
-
-        // it is not recommended to use this middleware globally...
-        if (null === $operationSource) {
-            return null;
-        }
-
-        $builder = new JsonSchemaBuilder($operationSource);
-
-        $mimeType = $this->fetchMimeType($request);
-
-        return $builder->forRequestBody($mimeType);
     }
 
     /**
@@ -150,8 +120,21 @@ class RequestBodyValidationMiddleware implements MiddlewareInterface
      */
     protected function validate(ServerRequestInterface $request) : void
     {
+        $route = $request->getAttribute(Route::ATTR_NAME_FOR_ROUTE);
+        if (!($route instanceof RouteInterface)) {
+            return;
+        }
+
+        $operationSource = new ReflectionClass($route->getRequestHandler());
+        $jsonSchemaBuilder = new JsonSchemaBuilder($operationSource);
+
+        if ($this->useCache) {
+            $jsonSchemaBuilder->useCache();
+        }
+
         try {
-            $jsonSchema = $this->fetchJsonSchema($request);
+            $mediaType = $this->fetchMediaType($request);
+            $jsonSchema = $jsonSchemaBuilder->forRequestBody($mediaType);
         } catch (LocalUnsupportedMediaTypeException $e) {
             throw new UnsupportedMediaTypeException($e->getMessage(), [
                 'type' => $e->getType(),

@@ -8,6 +8,7 @@ matrix:
   fast_finish: true
 
 before_install:
+  - travis_retry yes '' | pecl install -f apcu
   - travis_retry composer self-update
 
 install:

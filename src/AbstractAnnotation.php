@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * Import classes
  */
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
 
 /**
  * Import functions
@@ -31,11 +31,11 @@ abstract class AbstractAnnotation extends AbstractObject
     /**
      * Recursively collects all annotations referenced by this object or its children
      *
-     * @param SimpleAnnotationReader $annotationReader
+     * @param AnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface[]
      */
-    public function getReferencedObjects(SimpleAnnotationReader $annotationReader) : array
+    public function getReferencedObjects(AnnotationReader $annotationReader) : array
     {
         $fields = $this->getFields();
         $objects = [];

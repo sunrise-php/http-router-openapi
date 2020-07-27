@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * Import classes
  */
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -94,13 +94,13 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     /**
      * Tries to find a referenced object that implements the `ComponentObjectInterface` interface
      *
-     * @param SimpleAnnotationReader $annotationReader
+     * @param AnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface
      *
      * @throws InvalidReferenceException
      */
-    public function getAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    public function getAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
     {
         $key = hash(
             'md5',
@@ -128,17 +128,17 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     }
 
     /**
-     * Proxy to `SimpleAnnotationReader::getMethodAnnotation()` with validation
+     * Proxy to `AnnotationReader::getMethodAnnotation()` with validation
      *
-     * @param SimpleAnnotationReader $annotationReader
+     * @param AnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface
      *
      * @throws InvalidReferenceException
      *
-     * @see SimpleAnnotationReader::getMethodAnnotation()
+     * @see AnnotationReader::getMethodAnnotation()
      */
-    private function getMethodAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    private function getMethodAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
     {
         if (!method_exists($this->class, $this->method)) {
             $message = 'Annotation %s refers to non-existent method %s::%s()';
@@ -163,17 +163,17 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     }
 
     /**
-     * Proxy to `SimpleAnnotationReader::getPropertyAnnotation()` with validation
+     * Proxy to `AnnotationReader::getPropertyAnnotation()` with validation
      *
-     * @param SimpleAnnotationReader $annotationReader
+     * @param AnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface
      *
      * @throws InvalidReferenceException
      *
-     * @see SimpleAnnotationReader::getPropertyAnnotation()
+     * @see AnnotationReader::getPropertyAnnotation()
      */
-    private function getPropertyAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    private function getPropertyAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
     {
         if (!property_exists($this->class, $this->property)) {
             $message = 'Annotation %s refers to non-existent property %s::$%s';
@@ -198,17 +198,17 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     }
 
     /**
-     * Proxy to `SimpleAnnotationReader::getClassAnnotation()` with validation
+     * Proxy to `AnnotationReader::getClassAnnotation()` with validation
      *
-     * @param SimpleAnnotationReader $annotationReader
+     * @param AnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface
      *
      * @throws InvalidReferenceException
      *
-     * @see SimpleAnnotationReader::getClassAnnotation()
+     * @see AnnotationReader::getClassAnnotation()
      */
-    private function getClassAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    private function getClassAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
     {
         if (!class_exists($this->class)) {
             $message = 'Annotation %s refers to non-existent class %s';
