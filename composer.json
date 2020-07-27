@@ -29,7 +29,7 @@
         "phpbench/phpbench": "0.16.10",
         "phpunit/phpunit": "7.5.20",
         "sunrise/coding-standard": "1.0.0",
-        "justinrainbow/json-schema": "5.2.9"
+        "justinrainbow/json-schema": "5.2.10"
     },
     "autoload": {
         "psr-4": {
