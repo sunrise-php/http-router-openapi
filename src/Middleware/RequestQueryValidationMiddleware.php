@@ -42,6 +42,11 @@ class RequestQueryValidationMiddleware implements MiddlewareInterface
 {
 
     /**
+     * @var bool
+     */
+    private $useCache = false;
+
+    /**
      * Constructor of the class
      *
      * @throws RuntimeException
@@ -53,6 +58,14 @@ class RequestQueryValidationMiddleware implements MiddlewareInterface
         if (!class_exists('JsonSchema\Validator')) {
             throw new RuntimeException('To use request body validation, install the "justinrainbow/json-schema"');
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function useCache() : void
+    {
+        $this->useCache = true;
     }
 
     /**
@@ -82,15 +95,18 @@ class RequestQueryValidationMiddleware implements MiddlewareInterface
     protected function validate(ServerRequestInterface $request) : void
     {
         $route = $request->getAttribute(Route::ATTR_NAME_FOR_ROUTE);
-
         if (!($route instanceof RouteInterface)) {
             return;
         }
 
         $operationSource = new ReflectionClass($route->getRequestHandler());
         $jsonSchemaBuilder = new JsonSchemaBuilder($operationSource);
-        $jsonSchema = $jsonSchemaBuilder->forRequestQueryParams();
 
+        if ($this->useCache) {
+            $jsonSchemaBuilder->useCache();
+        }
+
+        $jsonSchema = $jsonSchemaBuilder->forRequestQueryParams();
         if (null === $jsonSchema) {
             return;
         }

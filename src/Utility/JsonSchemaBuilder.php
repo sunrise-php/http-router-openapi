@@ -14,7 +14,10 @@ namespace Sunrise\Http\Router\OpenApi\Utility;
 /**
  * Import classes
  */
+use Doctrine\Common\Annotations\CachedReader;
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Doctrine\Common\Cache\ApcuCache;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterReference;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBodyReference;
@@ -22,6 +25,7 @@ use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ResponseReference;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedMediaTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApi;
 use ReflectionClass;
+use RuntimeException;
 
 /**
  * Import functions
@@ -29,6 +33,7 @@ use ReflectionClass;
 use function array_keys;
 use function array_walk;
 use function array_walk_recursive;
+use function extension_loaded;
 use function str_replace;
 
 /**
@@ -50,9 +55,14 @@ class JsonSchemaBuilder
     private $operationSource;
 
     /**
-     * @var SimpleAnnotationReader
+     * @var AnnotationReader
      */
     private $annotationReader;
+
+    /**
+     * @var bool
+     */
+    private $useCache = false;
 
     /**
      * Constructor of the class
@@ -65,6 +75,42 @@ class JsonSchemaBuilder
 
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace(OpenApi::ANNOTATIONS_NAMESPACE);
+    }
+
+    /**
+     * @return ReflectionClass
+     */
+    public function getOperationSource() : ReflectionClass
+    {
+        return $this->operationSource;
+    }
+
+    /**
+     * @return AnnotationReader
+     */
+    public function getAnnotationReader() : AnnotationReader
+    {
+        return $this->annotationReader;
+    }
+
+    /**
+     * @return void
+     *
+     * @throws RuntimeException
+     */
+    public function useCache() : void
+    {
+        if ($this->useCache) {
+            throw new RuntimeException('Cache already used.');
+        }
+
+        if (!extension_loaded('apcu')) {
+            throw new RuntimeException('APCu extension required.');
+        }
+
+        $this->useCache = true;
+
+        $this->annotationReader = new CachedReader($this->annotationReader, new ApcuCache(__CLASS__), false);
     }
 
     /**

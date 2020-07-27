@@ -5,10 +5,13 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Utility;
 /**
  * Import classes
  */
+use Doctrine\Common\Annotations\CachedReader;
+use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedMediaTypeException;
 use Sunrise\Http\Router\OpenApi\Utility\JsonSchemaBuilder;
 use ReflectionClass;
+use RuntimeException;
 
 /**
  * JsonSchemaBuilderTest
@@ -84,6 +87,43 @@ class JsonSchemaBuilderTest extends TestCase
      * )
      */
     private $baz;
+
+    /**
+     * @return void
+     */
+    public function testConstructor() : void
+    {
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+
+        $this->assertSame($classReflection, $jsonSchemaBuilder->getOperationSource());
+        $this->assertInstanceOf(SimpleAnnotationReader::class, $jsonSchemaBuilder->getAnnotationReader());
+    }
+
+    /**
+     * @return void
+     */
+    public function testUseCache() : void
+    {
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchemaBuilder->useCache();
+
+        $this->assertInstanceOf(CachedReader::class, $jsonSchemaBuilder->getAnnotationReader());
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cache already used.');
+
+        $jsonSchemaBuilder->useCache();
+    }
 
     /**
      * @return void
