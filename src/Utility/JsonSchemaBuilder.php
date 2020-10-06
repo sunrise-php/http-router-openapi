@@ -66,6 +66,26 @@ class JsonSchemaBuilder
     private $useCache = false;
 
     /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_PATH = 'path';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_HEADER = 'header';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_QUERY = 'query';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_COOKIE = 'cookie';
+
+    /**
      * Constructor of the class
      *
      * @param ReflectionClass $operationSource
@@ -121,7 +141,7 @@ class JsonSchemaBuilder
      */
     public function forRequestPath() : ?array
     {
-        return $this->forRequestParams('path');
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_PATH);
     }
 
     /**
@@ -131,7 +151,7 @@ class JsonSchemaBuilder
      */
     public function forRequestQueryParams() : ?array
     {
-        return $this->forRequestParams('query');
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_QUERY);
     }
 
     /**
@@ -141,7 +161,7 @@ class JsonSchemaBuilder
      */
     public function forRequestHeader() : ?array
     {
-        return $this->forRequestParams('header');
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_HEADER);
     }
 
     /**
@@ -151,7 +171,7 @@ class JsonSchemaBuilder
      */
     public function forRequestCookie() : ?array
     {
-        return $this->forRequestParams('cookie');
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_COOKIE);
     }
 
     /**
