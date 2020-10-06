@@ -35,6 +35,7 @@ use function array_walk;
 use function array_walk_recursive;
 use function extension_loaded;
 use function str_replace;
+use function strtolower;
 
 /**
  * JsonSchemaBuilder
@@ -63,6 +64,26 @@ class JsonSchemaBuilder
      * @var bool
      */
     private $useCache = false;
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_PATH = 'path';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_HEADER = 'header';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_QUERY = 'query';
+
+    /**
+     * @var string
+     */
+    private const REQUEST_PARAMETER_LOCATION_COOKIE = 'cookie';
 
     /**
      * Constructor of the class
@@ -114,57 +135,43 @@ class JsonSchemaBuilder
     }
 
     /**
+     * Builds a JSON schema for a request path
+     *
+     * @return null|array
+     */
+    public function forRequestPath() : ?array
+    {
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_PATH);
+    }
+
+    /**
      * Builds a JSON schema for a request query parameters
      *
      * @return null|array
      */
     public function forRequestQueryParams() : ?array
     {
-        $operation = $this->annotationReader->getClassAnnotation($this->operationSource, Operation::class);
-        if (empty($operation->parameters)) {
-            return null;
-        }
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_QUERY);
+    }
 
-        $jsonSchema = $this->jsonSchemaBlank;
-        $jsonSchema['type'] = 'object';
-        $jsonSchema['required'] = [];
-        $jsonSchema['properties'] = [];
-        $jsonSchema['definitions'] = [];
+    /**
+     * Builds a JSON schema for a request header
+     *
+     * @return null|array
+     */
+    public function forRequestHeader() : ?array
+    {
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_HEADER);
+    }
 
-        foreach ($operation->parameters as $parameter) {
-            if ($parameter instanceof ParameterReference) {
-                $parameter = $parameter->getAnnotation($this->annotationReader);
-            }
-
-            if (!('query' === $parameter->in)) {
-                continue;
-            }
-
-            if ($parameter->required) {
-                $jsonSchema['required'][] = $parameter->name;
-            }
-
-            if ($parameter->schema) {
-                $jsonSchema['properties'][$parameter->name] = $parameter->schema;
-            }
-        }
-
-        if (empty($jsonSchema['required']) && empty($jsonSchema['properties'])) {
-            return null;
-        }
-
-        $referencedObjects = $operation->getReferencedObjects($this->annotationReader);
-        foreach ($referencedObjects as $referencedObject) {
-            if ('schemas' === $referencedObject->getComponentName()) {
-                $jsonSchema['definitions'][$referencedObject->getReferenceName()] = $referencedObject->toArray();
-            }
-        }
-
-        array_walk($jsonSchema['properties'], function (&$schema) {
-            $schema = $schema->toArray();
-        });
-
-        return $this->fixReferences($jsonSchema);
+    /**
+     * Builds a JSON schema for a request cookie
+     *
+     * @return null|array
+     */
+    public function forRequestCookie() : ?array
+    {
+        return $this->forRequestParams(self::REQUEST_PARAMETER_LOCATION_COOKIE);
     }
 
     /**
@@ -244,6 +251,68 @@ class JsonSchemaBuilder
         }
 
         $jsonSchema += $response->content[$mediaType]->schema->toArray();
+
+        return $this->fixReferences($jsonSchema);
+    }
+
+    /**
+     * Builds a JSON schema for a request parameters
+     *
+     * @param string $name Location name of the parameters specified by the "in" field
+     *    (possible name are "query", "header", "path" or "cookie")
+     *
+     * @return null|array
+     */
+    private function forRequestParams(string $name) : ?array
+    {
+        $operation = $this->annotationReader->getClassAnnotation($this->operationSource, Operation::class);
+
+        if (empty($operation->parameters)) {
+            return null;
+        }
+
+        $jsonSchema = $this->jsonSchemaBlank;
+        $jsonSchema['type'] = 'object';
+        $jsonSchema['required'] = [];
+        $jsonSchema['properties'] = [];
+        $jsonSchema['definitions'] = [];
+
+        foreach ($operation->parameters as $parameter) {
+            if ($parameter instanceof ParameterReference) {
+                $parameter = $parameter->getAnnotation($this->annotationReader);
+            }
+
+            if (!($name === $parameter->in)) {
+                continue;
+            }
+
+            if (self::REQUEST_PARAMETER_LOCATION_HEADER === $parameter->in) {
+                $parameter->name = strtolower($parameter->name);
+            }
+
+            if ($parameter->required) {
+                $jsonSchema['required'][] = $parameter->name;
+            }
+
+            if ($parameter->schema) {
+                $jsonSchema['properties'][$parameter->name] = $parameter->schema;
+            }
+        }
+
+        if (empty($jsonSchema['required']) && empty($jsonSchema['properties'])) {
+            return null;
+        }
+
+        $referencedObjects = $operation->getReferencedObjects($this->annotationReader);
+        foreach ($referencedObjects as $referencedObject) {
+            if ('schemas' === $referencedObject->getComponentName()) {
+                $jsonSchema['definitions'][$referencedObject->getReferenceName()] = $referencedObject->toArray();
+            }
+        }
+
+        array_walk($jsonSchema['properties'], function (&$schema) {
+            $schema = $schema->toArray();
+        });
 
         return $this->fixReferences($jsonSchema);
     }
