@@ -29,10 +29,7 @@ use RuntimeException;
 /**
  * Import functions
  */
-use function array_keys;
 use function class_exists;
-use function json_decode;
-use function json_encode;
 
 /**
  * RequestHeaderValidationMiddleware
@@ -113,16 +110,13 @@ class RequestHeaderValidationMiddleware implements MiddlewareInterface
         }
 
         // Represent the headers as a string
-        $headers = [];
-        foreach (array_keys($request->getHeaders()) as $header) {
-            $headers[$header] = $request->getHeaderLine($header);
+        $headers = new \stdClass();
+        foreach ($request->getHeaders() as $header => $_) {
+            $headers->{$header} = $request->getHeaderLine($header);
         }
 
-        $payload = json_encode($headers);
-        $payload = (object) json_decode($payload);
-
         $validator = new Validator();
-        $validator->validate($payload, $jsonSchema);
+        $validator->validate($headers, $jsonSchema);
 
         if (!$validator->isValid()) {
             throw new BadRequestException('The request header is not valid for this resource.', [

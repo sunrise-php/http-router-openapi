@@ -286,7 +286,7 @@ class JsonSchemaBuilder
                 continue;
             }
 
-            if ('header' === $parameter->in) {
+            if (self::REQUEST_PARAMETER_LOCATION_HEADER === $parameter->in) {
                 $parameter->name = strtolower($parameter->name);
             }
 
