@@ -35,6 +35,7 @@ use function array_walk;
 use function array_walk_recursive;
 use function extension_loaded;
 use function str_replace;
+use function strtolower;
 
 /**
  * JsonSchemaBuilder
