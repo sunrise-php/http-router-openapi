@@ -1,9 +1,7 @@
 build:
   environment:
     php:
-      version: '8.0'
-      ini:
-        apc.enable_cli: "1"
+      version: '7.4'
   nodes:
     analysis:
       tests:
