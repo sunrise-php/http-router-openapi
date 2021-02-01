@@ -3,7 +3,7 @@ build:
     php:
       version: '8.0'
       ini:
-        'apc.enable_cli': '1'
+        apc.enable_cli: "1"
   nodes:
     analysis:
       tests:
