@@ -8,6 +8,7 @@ jobs:
     docker:
       - image: circleci/php:7.1-cli-node-browsers
     steps:
+      - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
       - run: php -v
       - checkout
@@ -17,6 +18,7 @@ jobs:
     docker:
       - image: circleci/php:7.2-cli-node-browsers
     steps:
+      - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
       - run: php -v
       - checkout
@@ -26,6 +28,7 @@ jobs:
     docker:
       - image: circleci/php:7.3-cli-node-browsers
     steps:
+      - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
       - run: php -v
       - checkout
@@ -35,6 +38,7 @@ jobs:
     docker:
       - image: circleci/php:7.4-cli-node-browsers
     steps:
+      - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
       - run: php -v
       - checkout
@@ -44,6 +48,7 @@ jobs:
     docker:
       - image: circleci/php:8.0-cli-node-browsers
     steps:
+      - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
       - run: php -v
       - checkout
