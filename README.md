@@ -1,6 +1,6 @@
 ## OpenApi (Swagger) Specification support for Sunrise router
 
-[![Build Status](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/badges/build.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/build-status/master)
+[![Build Status](https://circleci.com/gh/sunrise-php/http-router-openapi.svg?style=shield)](https://circleci.com/gh/sunrise-php/http-router-openapi)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/?branch=master)
 [![Total Downloads](https://poser.pugx.org/sunrise/http-router-openapi/downloads?format=flat)](https://packagist.org/packages/sunrise/http-router-openapi)
