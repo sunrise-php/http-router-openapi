@@ -60,6 +60,8 @@ jobs:
     steps:
       - run: sudo pecl install apcu
       - run: sudo docker-php-ext-enable apcu
+      - run: sudo pecl install xdebug
+      - run: sudo docker-php-ext-enable xdebug
       - run: php -v
       - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
