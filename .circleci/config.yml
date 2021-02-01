@@ -65,7 +65,7 @@ jobs:
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always --coverage-html build/coverage-report
       - store_artifacts:
-        path:  build/coverage-report
+          path:  build/coverage-report
 workflows:
   version: 2
   build:
