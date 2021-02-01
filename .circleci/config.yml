@@ -8,45 +8,45 @@ jobs:
     docker:
       - image: circleci/php:7.1-cli-node-browsers
     steps:
-      - checkout
+      - run: sudo docker-php-ext-enable apcu
       - run: php -v
-      - run: pecl install -f apcu
+      - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
   php72:
     docker:
       - image: circleci/php:7.2-cli-node-browsers
     steps:
-      - checkout
+      - run: sudo docker-php-ext-enable apcu
       - run: php -v
-      - run: pecl install -f apcu
+      - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
   php73:
     docker:
       - image: circleci/php:7.3-cli-node-browsers
     steps:
-      - checkout
+      - run: sudo docker-php-ext-enable apcu
       - run: php -v
-      - run: pecl install -f apcu
+      - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
   php74:
     docker:
       - image: circleci/php:7.4-cli-node-browsers
     steps:
-      - checkout
+      - run: sudo docker-php-ext-enable apcu
       - run: php -v
-      - run: pecl install -f apcu
+      - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
   php80:
     docker:
       - image: circleci/php:8.0-cli-node-browsers
     steps:
-      - checkout
+      - run: sudo docker-php-ext-enable apcu
       - run: php -v
-      - run: pecl install -f apcu
+      - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
 workflows:
