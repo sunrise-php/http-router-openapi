@@ -54,20 +54,6 @@ jobs:
       - checkout
       - run: composer install --no-interaction --prefer-source --no-suggest
       - run: php vendor/bin/phpunit --colors=always
-  coverage:
-    docker:
-      - image: circleci/php:8.0-cli-node-browsers
-    steps:
-      - run: sudo pecl install apcu
-      - run: sudo docker-php-ext-enable apcu
-      - run: sudo pecl install xdebug
-      - run: sudo docker-php-ext-enable xdebug
-      - run: php -v
-      - checkout
-      - run: composer install --no-interaction --prefer-source --no-suggest
-      - run: php vendor/bin/phpunit --colors=always --coverage-html build/coverage-report
-      - store_artifacts:
-          path:  build/coverage-report
 workflows:
   version: 2
   build:
@@ -77,4 +63,3 @@ workflows:
       - php73
       - php74
       - php80
-      - coverage
