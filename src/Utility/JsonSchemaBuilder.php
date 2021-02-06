@@ -30,6 +30,7 @@ use RuntimeException;
 /**
  * Import functions
  */
+use function is_array;
 use function array_keys;
 use function array_walk;
 use function array_walk_recursive;
@@ -213,6 +214,7 @@ class JsonSchemaBuilder
         }
 
         $jsonSchema += $requestBody->content[$mediaType]->schema->toArray();
+        $jsonSchema = $this->fixNullable($jsonSchema);
 
         return $this->fixReferences($jsonSchema);
     }
@@ -251,6 +253,7 @@ class JsonSchemaBuilder
         }
 
         $jsonSchema += $response->content[$mediaType]->schema->toArray();
+        $jsonSchema = $this->fixNullable($jsonSchema);
 
         return $this->fixReferences($jsonSchema);
     }
@@ -314,6 +317,8 @@ class JsonSchemaBuilder
             $schema = $schema->toArray();
         });
 
+        $jsonSchema = $this->fixNullable($jsonSchema);
+
         return $this->fixReferences($jsonSchema);
     }
 
@@ -329,6 +334,33 @@ class JsonSchemaBuilder
                 $value = str_replace('#/components/schemas/', '#/definitions/', $value);
             }
         });
+
+        return $jsonSchema;
+    }
+
+    /**
+     * @param array $jsonSchema
+     *
+     * @return array
+     */
+    private function fixNullable(array $jsonSchema) : array
+    {
+        $fixer = function (array &$array) use (&$fixer) {
+            foreach ($array as $key => &$value) {
+                if ('nullable' === $key && true === $value) {
+                    $array['type'] = [$array['type'], 'null'];
+                    unset($array[$key]);
+                    continue;
+                }
+
+                if (is_array($value)) {
+                    $fixer($value);
+                    continue;
+                }
+            }
+        };
+
+        $fixer($jsonSchema);
 
         return $jsonSchema;
     }
