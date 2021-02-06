@@ -739,7 +739,6 @@ class JsonSchemaBuilderTest extends TestCase
      */
     public function testNullable() : void
     {
-
         /**
          * @OpenApi\Operation(
          *   requestBody=@OpenApi\RequestBody(
