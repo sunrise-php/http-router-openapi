@@ -5,8 +5,8 @@ build:
       pecl_extensions:
         - apcu
       ini:
-        'xdebug.mode': 'coverage'
         'apc.enable_cli': '1'
+        'xdebug.mode': 'coverage'
   nodes:
     analysis:
       tests:
