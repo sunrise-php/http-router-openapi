@@ -733,4 +733,52 @@ class JsonSchemaBuilderTest extends TestCase
 
         $this->assertNull($jsonSchema);
     }
+
+    /**
+     * @return void
+     */
+    public function testNullable() : void
+    {
+        /**
+         * @OpenApi\Operation(
+         *   requestBody=@OpenApi\RequestBody(
+         *     content={
+         *       "application/json"=@OpenApi\MediaType(
+         *         schema=@OpenApi\Schema(
+         *           type="object",
+         *           properties={
+         *             "foo"=@OpenApi\Schema(
+         *               type="string",
+         *               nullable=true,
+         *             ),
+         *           },
+         *         ),
+         *       ),
+         *     },
+         *   ),
+         *   responses={
+         *     200=@OpenApi\Response(
+         *       description="OK",
+         *     ),
+         *   },
+         * )
+         */
+        $class = new class
+        {
+        };
+
+        $classReflection = new ReflectionClass($class);
+        $jsonSchemaBuilder = new JsonSchemaBuilder($classReflection);
+        $jsonSchema = $jsonSchemaBuilder->forRequestBody('application/json');
+
+        $this->assertSame([
+            '$schema' => 'http://json-schema.org/draft-00/schema#',
+            'properties' => [
+                'foo' => [
+                    'type' => ['string', 'null'],
+                ],
+            ],
+            'type' => 'object',
+        ], $jsonSchema);
+    }
 }

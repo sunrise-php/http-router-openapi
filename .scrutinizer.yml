@@ -1,0 +1,21 @@
+build:
+  environment:
+    php:
+      version: '8.0'
+      pecl_extensions:
+        - apcu
+      ini:
+        'apc.enable_cli': '1'
+        'xdebug.mode': 'coverage'
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
+    coverage:
+      tests:
+        override:
+          - command: php vendor/bin/phpunit --coverage-clover coverage.xml
+            coverage:
+              file: coverage.xml
+              format: clover
