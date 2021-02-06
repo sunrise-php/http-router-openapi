@@ -4,6 +4,7 @@ build:
       version: '8.0'
       ini:
         'xdebug.mode': 'coverage'
+        'apc.enable_cli': '1'
   nodes:
     analysis:
       tests:
