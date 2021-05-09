@@ -24,7 +24,7 @@
     "require": {
         "php": "^7.1|^8.0",
         "doctrine/annotations": "^1.6",
-        "doctrine/cache": "^1.6",
+        "doctrine/cache": "^2.0",
         "sunrise/http-router": "^2.4"
     },
     "require-dev": {
