@@ -80,4 +80,72 @@ class AbstractAnnotationTest extends TestCase
 
         ], reset($referencedObjects)->toArray());
     }
+
+    /**
+     * @return void
+     */
+    public function testSimplifiedReferencing() : void
+    {
+        $annotation = new class extends AbstractAnnotation
+        {
+            public $child;
+            public $reference;
+
+            public function __construct()
+            {
+                $this->child = clone $this;
+
+                $this->child->reference = new class extends AbstractAnnotationReference
+                {
+                    public $class = Fixture\SimplifiedReferencing\Foo::class;
+
+                    public function getAnnotationName() : string
+                    {
+                        return Schema::class;
+                    }
+                };
+            }
+        };
+
+        $referencedObjects = $annotation->getReferencedObjects($this->createSimpleAnnotationReader());
+        foreach ($referencedObjects as &$referencedObject) {
+            $referencedObject = $referencedObject->toArray();
+        }
+
+        $this->assertSame([
+            [
+                'properties' => [
+                    'bar' => [
+                        '$ref' => '#/components/schemas/Bar',
+                    ],
+                    'baz' => [
+                        '$ref' => '#/components/schemas/Baz',
+                    ],
+                ],
+                'type' => 'object',
+            ],
+            [
+                'properties' => [
+                    'value' => [
+                        '$ref' => '#/components/schemas/Bar.value',
+                    ],
+                ],
+                'type' => 'object',
+            ],
+            [
+                'type' => 'string',
+            ],
+            [
+                'properties' => [
+                    'value' => [
+                        '$ref' => '#/components/schemas/Baz.fn_value',
+                    ],
+                ],
+                'type' => 'object',
+            ],
+            [
+                'type' => 'string',
+            ],
+        ], $referencedObjects);
+    }
 }

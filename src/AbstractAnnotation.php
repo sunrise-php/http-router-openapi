@@ -29,6 +29,11 @@ abstract class AbstractAnnotation extends AbstractObject
 {
 
     /**
+     * @var \ReflectionClass
+     */
+    public $_holder = null;
+
+    /**
      * Recursively collects all annotations referenced by this object or its children
      *
      * @param AnnotationReader $annotationReader
@@ -44,7 +49,7 @@ abstract class AbstractAnnotation extends AbstractObject
             if ($value instanceof AbstractAnnotation) {
                 $objects = array_merge($objects, $value->getReferencedObjects($annotationReader));
             } elseif ($value instanceof AbstractAnnotationReference) {
-                $object = $value->getAnnotation($annotationReader);
+                $object = $value->getAnnotation($annotationReader, $this->_holder);
                 $objects[] = $object;
 
                 if ($object instanceof AbstractAnnotation) {
