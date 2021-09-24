@@ -95,13 +95,28 @@ abstract class AbstractAnnotationReference implements ObjectInterface
      * Tries to find a referenced object that implements the `ComponentObjectInterface` interface
      *
      * @param AnnotationReader $annotationReader
+     * @param ReflectionClass $holder
      *
      * @return ComponentObjectInterface
      *
      * @throws InvalidReferenceException
      */
-    public function getAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
+    public function getAnnotation(AnnotationReader $annotationReader, ReflectionClass $holder = null) : ComponentObjectInterface
     {
+        if (false !== \strpos($this->class, '.')) {
+            list($this->class, $this->property) = \explode('.', $this->class, 2);
+        } elseif (false !== \strpos($this->class, '@')) {
+            list($this->class, $this->method) = \explode('@', $this->class, 2);
+        }
+
+        if (isset($holder)) {
+            if ('' === $this->class) {
+                $this->class = $holder->getName();
+            } elseif (false === \strpos($this->class, '\\') && $holder->getNamespaceName()) {
+                $this->class = $holder->getNamespaceName() . '\\' . $this->class;
+            }
+        }
+
         $key = hash(
             'md5',
             $this->class .
@@ -147,16 +162,21 @@ abstract class AbstractAnnotationReference implements ObjectInterface
             );
         }
 
-        $object = $annotationReader->getMethodAnnotation(
-            new ReflectionMethod($this->class, $this->method),
-            $this->getAnnotationName()
-        );
+        $reflection = new ReflectionMethod($this->class, $this->method);
+
+        $object = $annotationReader->getMethodAnnotation($reflection, $this->getAnnotationName());
 
         if (null === $object) {
             $message = 'Method %s::%s() does not contain the annotation %s';
             throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->method, $this->getAnnotationName())
             );
+        }
+
+        $object->_holder = $reflection->getDeclaringClass();
+
+        if (null === $object->refName) {
+            $object->refName = $reflection->getDeclaringClass()->getShortName() . '.fn_' . $reflection->getName();
         }
 
         return $object;
@@ -182,16 +202,21 @@ abstract class AbstractAnnotationReference implements ObjectInterface
             );
         }
 
-        $object = $annotationReader->getPropertyAnnotation(
-            new ReflectionProperty($this->class, $this->property),
-            $this->getAnnotationName()
-        );
+        $reflection = new ReflectionProperty($this->class, $this->property);
+
+        $object = $annotationReader->getPropertyAnnotation($reflection, $this->getAnnotationName());
 
         if (null === $object) {
             $message = 'Property %s::$%s does not contain the annotation %s';
             throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->property, $this->getAnnotationName())
             );
+        }
+
+        $object->_holder = $reflection->getDeclaringClass();
+
+        if (null === $object->refName) {
+            $object->refName = $reflection->getDeclaringClass()->getShortName() . '.' . $reflection->getName();
         }
 
         return $object;
@@ -217,16 +242,21 @@ abstract class AbstractAnnotationReference implements ObjectInterface
             );
         }
 
-        $object = $annotationReader->getClassAnnotation(
-            new ReflectionClass($this->class),
-            $this->getAnnotationName()
-        );
+        $reflection = new ReflectionClass($this->class);
+
+        $object = $annotationReader->getClassAnnotation($reflection, $this->getAnnotationName());
 
         if (null === $object) {
             $message = 'Class %s does not contain the annotation %s';
             throw new InvalidReferenceException(
                 sprintf($message, $this->class, $this->getAnnotationName())
             );
+        }
+
+        $object->_holder = $reflection;
+
+        if (null === $object->refName) {
+            $object->refName = $reflection->getShortName();
         }
 
         return $object;

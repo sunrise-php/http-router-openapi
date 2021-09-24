@@ -67,6 +67,11 @@ abstract class AbstractObject implements ObjectInterface
         $fields = [];
 
         foreach ($this as $name => $value) {
+            // the internal field (property) should be ignored...
+            if ('_' === $name[0]) {
+                continue;
+            }
+
             // the field (property) doesn't matter or is NULL...
             if (null === $value) {
                 continue;
