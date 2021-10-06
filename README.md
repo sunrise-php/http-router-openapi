@@ -39,17 +39,15 @@ $openapi->addRoute(...$router->getRoutes());
 ```php
 // Converting the openapi object to JSON document:
 $openapi->toJson();
-
 // Converting the openapi object to YAML document:
 $openapi->toYaml();
-
 // Converting the openapi object to an array
 $openapi->toArray();
 ```
 
 #### Building JSON Schemas
 
-> Converting an operation part to [JSON Schema](https://json-schema.org).
+> Converts an operation part to [JSON Schema](https://json-schema.org).
 
 ```php
 $openapi->getRequestCookieJsonSchema();
@@ -63,7 +61,7 @@ $openapi->getResponseBodyJsonSchema();
 
 #### RequestValidationMiddleware
 
-> Validating a request using a route description.
+> Validates a request using a route description.
 
 ```php
 use Sunrise\Http\Router\OpenApi\Middleware\RequestValidationMiddleware;
@@ -78,7 +76,7 @@ $middleware = new RequestValidationMiddleware($openapi);
 
 #### GenerateOpenapiDocumentCommand
 
-> Generating OpenAPI document.
+> Generates OpenAPI document.
 
 ```php
 use Sunrise\Http\Router\OpenApi\Command\GenerateOpenapiDocumentCommand;
@@ -94,7 +92,7 @@ php bin/app router:generate-openapi-document --help
 
 #### GenerateJsonSchemaCommand
 
-> Converting an operation part to [JSON Schema](https://json-schema.org).
+> Generates an operation part to [JSON Schema](https://json-schema.org).
 
 ```php
 use Sunrise\Http\Router\OpenApi\Command\GenerateJsonSchemaCommand;
@@ -125,6 +123,8 @@ class SomeTest extends TestCase
 
     public function testResponseBodyMatchesDescription() : void
     {
+        // some logic to run a route...
+
         /** @var ResponseInterface $response */
         $this->assertResponseBodyMatchesDescription('route.name', $response);
     }
