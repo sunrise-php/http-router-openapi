@@ -34,7 +34,7 @@ final class SecurityRequirement implements SecurityRequirementInterface
     public $scopes = [];
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-requirement-object-examples
      */

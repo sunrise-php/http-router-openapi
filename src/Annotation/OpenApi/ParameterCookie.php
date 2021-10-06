@@ -12,23 +12,19 @@
 namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
 
 /**
- * Import classes
- */
-use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
-
-/**
  * @Annotation
  *
- * @Target({"ANNOTATION"})
+ * @Target({"ALL"})
+ *
+ * @see Parameter
  */
-final class ParameterReference extends AbstractAnnotationReference implements ParameterInterface
+final class ParameterCookie extends Parameter
 {
 
     /**
-     * {@inheritdoc}
+     * @Enum({"cookie"})
+     *
+     * @var string
      */
-    public function getAnnotationName() : string
-    {
-        return Parameter::class;
-    }
+    public $in = 'cookie';
 }

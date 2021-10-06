@@ -25,7 +25,7 @@ final class ExampleReference extends AbstractAnnotationReference implements Exam
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

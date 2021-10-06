@@ -19,15 +19,19 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS OAuth Flow Object
  *
+ * Configuration details for a supported OAuth Flow.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#oauth-flow-object
  */
-class OAuthFlow extends AbstractObject
+final class OAuthFlow extends AbstractObject
 {
 
     /**
      * The authorization URL to be used for this flow
      *
      * This MUST be in the form of a URL.
+     *
+     * The OAuth2 standard requires the use of TLS.
      *
      * @var string
      *
@@ -38,7 +42,9 @@ class OAuthFlow extends AbstractObject
     /**
      * The token URL to be used for this flow
      *
-     * This MUST be in the form of a URL.
+     * This MUST be in the form of a URL
+     *
+     * The OAuth2 standard requires the use of TLS.
      *
      * @var string
      *
@@ -51,6 +57,8 @@ class OAuthFlow extends AbstractObject
      *
      * This MUST be in the form of a URL.
      *
+     * The OAuth2 standard requires the use of TLS.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oauthflowrefreshurl
@@ -61,6 +69,8 @@ class OAuthFlow extends AbstractObject
      * The available scopes for the OAuth2 security scheme
      *
      * A map between the scope name and a short description for it.
+     *
+     * The map MAY be empty.
      *
      * @var string[]
      *

@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  * Import classes
  */
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * Import functions
@@ -29,11 +29,11 @@ use function spl_object_hash;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#header-object
  */
-final class Header extends AbstractAnnotation implements HeaderInterface, ComponentObjectInterface
+final class Header extends AbstractAnnotation implements HeaderInterface, ComponentInterface
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected const IGNORE_FIELDS = ['refName'];
 
@@ -99,7 +99,7 @@ final class Header extends AbstractAnnotation implements HeaderInterface, Compon
     public $examples;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getComponentName() : string
     {
@@ -107,7 +107,7 @@ final class Header extends AbstractAnnotation implements HeaderInterface, Compon
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getReferenceName() : string
     {

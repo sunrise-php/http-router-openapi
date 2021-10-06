@@ -19,9 +19,11 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS License Object
  *
+ * License information for the exposed API.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#license-object
  */
-class License extends AbstractObject
+final class License extends AbstractObject
 {
 
     /**
@@ -34,7 +36,21 @@ class License extends AbstractObject
     protected $name;
 
     /**
-     * A URL to the license used for the API. MUST be in the format of a URL
+     * An SPDX license expression for the API
+     *
+     * The identifier field is mutually exclusive of the url field.
+     *
+     * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#user-content-licenseidentifier
+     * @link https://spdx.dev/spdx-specification-21-web-version/#h.jxpfx0ykyb60
+     */
+    protected $identifier;
+
+    /**
+     * A URL to the license used for the API
+     *
+     * This MUST be in the form of a URL. The url field is mutually exclusive of the identifier field.
      *
      * @var string
      *
@@ -48,6 +64,16 @@ class License extends AbstractObject
     public function __construct(string $name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @param string $identifier
+     *
+     * @return void
+     */
+    public function setIdentifier(string $identifier) : void
+    {
+        $this->identifier = $identifier;
     }
 
     /**

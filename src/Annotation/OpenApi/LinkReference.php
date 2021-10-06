@@ -25,7 +25,7 @@ final class LinkReference extends AbstractAnnotationReference implements LinkInt
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

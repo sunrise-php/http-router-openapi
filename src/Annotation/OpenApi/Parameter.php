@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  * Import classes
  */
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * Import functions
@@ -28,12 +28,14 @@ use function spl_object_hash;
  * @Target({"ALL"})
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object
+ *
+ * @final Don't use the object outside of the package.
  */
-final class Parameter extends AbstractAnnotation implements ParameterInterface, ComponentObjectInterface
+class Parameter extends AbstractAnnotation implements ParameterInterface, ComponentInterface
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected const IGNORE_FIELDS = ['refName'];
 
@@ -143,7 +145,7 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface, 
     public $content;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getComponentName() : string
     {
@@ -151,7 +153,7 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface, 
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getReferenceName() : string
     {

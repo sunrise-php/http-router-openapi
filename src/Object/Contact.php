@@ -19,9 +19,11 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS Contact Object
  *
+ * Contact information for the exposed API.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#contact-object
  */
-class Contact extends AbstractObject
+final class Contact extends AbstractObject
 {
 
     /**
@@ -34,7 +36,9 @@ class Contact extends AbstractObject
     protected $name;
 
     /**
-     * The URL pointing to the contact information. MUST be in the format of a URL
+     * The URL pointing to the contact information
+     *
+     * This MUST be in the form of a URL.
      *
      * @var string
      *
@@ -43,7 +47,9 @@ class Contact extends AbstractObject
     protected $url;
 
     /**
-     * The email address of the contact person/organization. MUST be in the format of an email address
+     * The email address of the contact person/organization
+     *
+     * This MUST be in the form of an email address.
      *
      * @var string
      *
@@ -52,9 +58,21 @@ class Contact extends AbstractObject
     protected $email;
 
     /**
-     * @param string $name
+     * BC (backward compatibility) for version 1.x
+     *
+     * @param string|null $name
      */
-    public function __construct(string $name)
+    public function __construct(?string $name = null)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
+    public function setName(string $name) : void
     {
         $this->name = $name;
     }

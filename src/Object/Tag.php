@@ -19,9 +19,13 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS Tag Object
  *
+ * Adds metadata to a single tag that is used by the Operation Object.
+ *
+ * It is not mandatory to have a Tag Object per tag defined in the Operation Object instances.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#tag-object
  */
-class Tag extends AbstractObject
+final class Tag extends AbstractObject
 {
 
     /**
@@ -34,14 +38,13 @@ class Tag extends AbstractObject
     protected $name;
 
     /**
-     * A short description for the tag
+     * A description for the tag
      *
      * CommonMark syntax MAY be used for rich text representation.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-tagdescription
-     *
      * @link https://spec.commonmark.org/
      */
     protected $description;
