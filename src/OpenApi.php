@@ -483,7 +483,7 @@ final class OpenApi extends AbstractObject
      */
     private function getOperations() : array
     {
-        $annotationReader = new SimpleAnnotationReader();
+        $annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
         $annotationReader->addNamespace(self::ANNOTATIONS_NAMESPACE);
 
         $operations = [];
