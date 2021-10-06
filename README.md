@@ -25,41 +25,45 @@ use Sunrise\Http\Router\Router;
 
 $openapi = new OpenApi(new Info('Acme', '1.0.0'));
 
-// PSR-16 simple cache implementation...
+// Passing PSR-16 cache to the openapi object:
 /** @var CacheInterface $cache */
 $openapi->setCache($cache);
 
 // Passing all routes to the openapi object:
 /** @var Router $router */
 $openapi->addRoute(...$router->getRoutes());
-
-// Convert the openapi object to JSON document:
-$openapi->toJson();
-// Convert the openapi object to YAML document:
-$openapi->toYaml();
-// Convert the openapi object to an array
-$openapi->toArray();
-
-// Convert an operation part to JSON schema (an array):
-// a request cookies:
-$openapi->getRequestCookieJsonSchema();
-// a request headers:
-$openapi->getRequestHeaderJsonSchema();
-// a request query:
-$openapi->getRequestQueryJsonSchema();
-// a request body:
-$openapi->getRequestBodyJsonSchema();
-// a response body:
-$openapi->getResponseBodyJsonSchema();
 ```
 
-Look for more examples here: [Some App](https://github.com/sunrise-php/http-router-openapi/tree/be27acedfc1f100f8efdcdd9da9430714890baa3/tests/fixtures/SomeApp)
+#### Building OpenAPI Document
+
+```php
+// Converting the openapi object to JSON document:
+$openapi->toJson();
+
+// Converting the openapi object to YAML document:
+$openapi->toYaml();
+
+// Converting the openapi object to an array
+$openapi->toArray();
+```
+
+#### Building JSON Schemas
+
+> Converting an operation part to [JSON Schema](https://json-schema.org).
+
+```php
+$openapi->getRequestCookieJsonSchema();
+$openapi->getRequestHeaderJsonSchema();
+$openapi->getRequestQueryJsonSchema();
+$openapi->getRequestBodyJsonSchema();
+$openapi->getResponseBodyJsonSchema();
+```
 
 ## PSR-15 Middlewares
 
 #### RequestValidationMiddleware
 
-> Validates a request using a route description.
+> Validating a request using a route description.
 
 ```php
 use Sunrise\Http\Router\OpenApi\Middleware\RequestValidationMiddleware;
@@ -68,16 +72,13 @@ use Sunrise\Http\Router\Route;
 
 /** @var OpenApi $openapi */
 $middleware = new RequestValidationMiddleware($openapi);
-
-/** @var Route $route */
-$route->addMiddleware($middleware);
 ```
 
 ## Symfony Commands
 
 #### GenerateOpenapiDocumentCommand
 
-> Generates OpenAPI document.
+> Generating OpenAPI document.
 
 ```php
 use Sunrise\Http\Router\OpenApi\Command\GenerateOpenapiDocumentCommand;
@@ -93,7 +94,7 @@ php bin/app router:generate-openapi-document --help
 
 #### GenerateJsonSchemaCommand
 
-> Converts an operation part to [JSON schema](https://json-schema.org).
+> Converting an operation part to [JSON Schema](https://json-schema.org).
 
 ```php
 use Sunrise\Http\Router\OpenApi\Command\GenerateJsonSchemaCommand;
@@ -106,3 +107,65 @@ $command = new GenerateJsonSchemaCommand($openapi);
 ```bash
 php bin/app router:generate-json-schema --help
 ```
+
+## Test Kit
+
+#### assertResponseBodyMatchesDescription
+
+> The assertion fails if the given response body doesn't match a description of the operation identified by the given ID.
+
+```php
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Sunrise\Http\Router\OpenApi\Test\OpenapiTestKit;
+
+class SomeTest extends TestCase
+{
+    use OpenapiTestKit;
+
+    public function testResponseBodyMatchesDescription() : void
+    {
+        /** @var ResponseInterface $response */
+        $this->assertResponseBodyMatchesDescription('route.name', $response);
+    }
+}
+```
+
+## Simple Route Description
+
+```php
+class SomeController
+{
+
+    /**
+     * @OpenApi\Operation(
+     *   requestBody=@OpenApi\RequestBody(
+     *     content={
+     *       "application/json": @OpenApi\MediaType(
+     *         schema=@OpenApi\Schema(
+     *           type="object",
+     *           properties={
+     *             "foo": @OpenApi\Schema(
+     *               type="string",
+     *             ),
+     *           },
+     *         ),
+     *       ),
+     *     },
+     *   ),
+     *   responses={
+     *     200: @OpenApi\Response(
+     *       description="Ok",
+     *     ),
+     *   },
+     * )
+     */
+    public function someAction()
+    {
+    }
+}
+```
+
+---
+
+Look for more examples here: [Some App](https://github.com/sunrise-php/http-router-openapi/tree/be27acedfc1f100f8efdcdd9da9430714890baa3/tests/fixtures/SomeApp)
