@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-00/schema#",
+    "type": "object",
+    "required": [
+        "x-key"
+    ],
+    "properties": {
+        "x-key": {
+            "$ref": "#/definitions/UserController.key"
+        }
+    },
+    "definitions": {
+        "UserController.key": {
+            "format": "uuid",
+            "type": "string"
+        }
+    }
+}

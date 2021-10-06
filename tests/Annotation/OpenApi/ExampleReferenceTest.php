@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Example;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExampleInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ExampleReference;
-use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 
 /**
  * ExampleReferenceTest

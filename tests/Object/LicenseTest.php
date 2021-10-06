@@ -6,8 +6,8 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\OpenApi\Object\License;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
+use Sunrise\Http\Router\OpenApi\Object\License;
 
 /**
  * LicenseTest
@@ -34,6 +34,20 @@ class LicenseTest extends TestCase
 
         $this->assertSame([
             'name' => 'foo',
+        ], $object->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetIdentifier() : void
+    {
+        $object = new License('foo');
+        $object->setIdentifier('bar');
+
+        $this->assertSame([
+            'name' => 'foo',
+            'identifier' => 'bar',
         ], $object->toArray());
     }
 

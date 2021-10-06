@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBody;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\RequestBodyInterface;
-use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * Import functions
@@ -31,7 +31,7 @@ class RequestBodyTest extends TestCase
 
         $this->assertInstanceOf(RequestBodyInterface::class, $object);
         $this->assertInstanceOf(AbstractAnnotation::class, $object);
-        $this->assertInstanceOf(ComponentObjectInterface::class, $object);
+        $this->assertInstanceOf(ComponentInterface::class, $object);
     }
 
     /**

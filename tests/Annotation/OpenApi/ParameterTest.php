@@ -6,10 +6,13 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterInterface;
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterCookie;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterHeader;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterQuery;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\ParameterInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * Import functions
@@ -31,7 +34,25 @@ class ParameterTest extends TestCase
 
         $this->assertInstanceOf(ParameterInterface::class, $object);
         $this->assertInstanceOf(AbstractAnnotation::class, $object);
-        $this->assertInstanceOf(ComponentObjectInterface::class, $object);
+        $this->assertInstanceOf(ComponentInterface::class, $object);
+    }
+
+    /**
+     * @return void
+     */
+    public function testPreparedClasses() : void
+    {
+        $object = new ParameterCookie();
+        $this->assertInstanceOf(Parameter::class, $object);
+        $this->assertSame('cookie', $object->in);
+
+        $object = new ParameterHeader();
+        $this->assertInstanceOf(Parameter::class, $object);
+        $this->assertSame('header', $object->in);
+
+        $object = new ParameterQuery();
+        $this->assertInstanceOf(Parameter::class, $object);
+        $this->assertSame('query', $object->in);
     }
 
     /**

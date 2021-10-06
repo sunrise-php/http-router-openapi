@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-00/schema#",
+    "$ref": "#/definitions/User",
+    "definitions": {
+        "User": {
+            "properties": {
+                "email": {
+                    "$ref": "#/definitions/User.email"
+                },
+                "password": {
+                    "$ref": "#/definitions/User.password"
+                }
+            },
+            "type": "object"
+        },
+        "User.email": {
+            "format": "email",
+            "type": "string"
+        },
+        "User.password": {
+            "format": "password",
+            "type": "string"
+        }
+    }
+}
