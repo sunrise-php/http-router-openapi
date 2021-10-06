@@ -6,13 +6,13 @@ build:
         - yaml
   nodes:
     analysis:
+      dependencies:
+        before:
+          - sudo apt install libyaml-dev -y
       tests:
         override:
           - php-scrutinizer-run
     coverage:
-      dependencies:
-        before:
-          - sudo apt install libyaml-dev -y
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
