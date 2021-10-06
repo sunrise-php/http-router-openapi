@@ -8,9 +8,10 @@ build:
         override:
           - php-scrutinizer-run
     coverage:
-      before:
-        - sudo apt install libyaml-dev -y
-        - sudo pecl install yaml
+      dependencies:
+        before:
+          - sudo apt install libyaml-dev -y
+          - sudo pecl install yaml
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
