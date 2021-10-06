@@ -15,6 +15,10 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import classes
  */
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionProperty;
+use Reflector;
 
 /**
  * Import functions
@@ -29,35 +33,77 @@ abstract class AbstractAnnotation extends AbstractObject
 {
 
     /**
-     * @var \ReflectionClass
+     * The annotation holder
+     *
+     * @var ReflectionClass|ReflectionMethod|ReflectionProperty|null
      */
-    public $_holder = null;
+    private $holder = null;
 
     /**
-     * Recursively collects all annotations referenced by this object or its children
+     * Objects referenced by this annotation
+     *
+     * @var ComponentInterface[]
+     */
+    private $referencedObjects = [];
+
+    /**
+     * Sets the annotation holder
+     *
+     * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $holder
+     *
+     * @return void
+     */
+    public function setHolder(?Reflector $holder) : void
+    {
+        $this->holder = $holder;
+    }
+
+    /**
+     * Gets objects referenced by this annotation
+     *
+     * @return ComponentInterface[]
+     */
+    public function getReferencedObjects() : array
+    {
+        return $this->referencedObjects;
+    }
+
+    /**
+     * Recursively collects objects referenced by this annotation and returns the result
      *
      * @param AnnotationReader $annotationReader
      *
-     * @return ComponentObjectInterface[]
+     * @return ComponentInterface[]
      */
-    public function getReferencedObjects(AnnotationReader $annotationReader) : array
+    public function collectReferencedObjects(AnnotationReader $annotationReader) : array
     {
         $fields = $this->getFields();
-        $objects = [];
+        $referencedObjects = [];
 
-        array_walk_recursive($fields, function ($value) use ($annotationReader, &$objects) {
+        array_walk_recursive($fields, function ($value) use ($annotationReader, &$referencedObjects) {
             if ($value instanceof AbstractAnnotation) {
-                $objects = array_merge($objects, $value->getReferencedObjects($annotationReader));
-            } elseif ($value instanceof AbstractAnnotationReference) {
-                $object = $value->getAnnotation($annotationReader, $this->_holder);
-                $objects[] = $object;
+                // passing the annotation holder to all child items...
+                $value->holder = $this->holder;
 
-                if ($object instanceof AbstractAnnotation) {
-                    $objects = array_merge($objects, $object->getReferencedObjects($annotationReader));
+                $referencedObjects = array_merge(
+                    $referencedObjects,
+                    $value->collectReferencedObjects($annotationReader)
+                );
+            } elseif ($value instanceof AbstractAnnotationReference) {
+                $referencedObject = $value->getAnnotation($annotationReader, $this->holder);
+                $referencedObjects[] = $referencedObject;
+
+                if ($referencedObject instanceof AbstractAnnotation) {
+                    $referencedObjects = array_merge(
+                        $referencedObjects,
+                        $referencedObject->collectReferencedObjects($annotationReader)
+                    );
                 }
             }
         });
 
-        return $objects;
+        $this->referencedObjects = $referencedObjects;
+
+        return $this->referencedObjects;
     }
 }

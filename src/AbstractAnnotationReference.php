@@ -15,10 +15,11 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import classes
  */
 use Doctrine\Common\Annotations\Reader as AnnotationReader;
+use Sunrise\Http\Router\OpenApi\Exception\InvalidReferenceException;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
-use Sunrise\Http\Router\OpenApi\Exception\InvalidReferenceException;
+use Reflector;
 
 /**
  * Import functions
@@ -29,6 +30,8 @@ use function class_exists;
 use function method_exists;
 use function property_exists;
 use function get_called_class;
+use function explode;
+use function strpos;
 
 /**
  * AbstractAnnotationReference
@@ -39,13 +42,22 @@ abstract class AbstractAnnotationReference implements ObjectInterface
 {
 
     /**
-     * Storage for referenced objects
+     * Cached annotations referenced by this annotation
      *
-     * @var ComponentObjectInterface[]
+     * @var ComponentInterface[]
      */
-    private static $cache = [];
+    private static $annotations = [];
 
     /**
+     * An object referenced by this annotation
+     *
+     * @var ComponentInterface|null
+     */
+    private $referencedObject = null;
+
+    /**
+     * A class name referenced by this annotation
+     *
      * @Required
      *
      * @var string
@@ -53,28 +65,39 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     public $class;
 
     /**
+     * A class method referenced by this annotation
+     *
      * @var string
      */
     public $method;
 
     /**
+     * A class property referenced by this annotation
+     *
      * @var string
      */
     public $property;
 
     /**
-     * @var ComponentObjectInterface
+     * Gets an object referenced by this annotation
+     *
+     * @return ComponentInterface|null
      */
-    private $referencedObject;
+    public function getReferencedObject() : ?ComponentInterface
+    {
+        return $this->referencedObject;
+    }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function toArray() : array
     {
-        // theoretically this condition will never be confirmed...
+        // It's impossible...
         if (null === $this->referencedObject) {
+            // @codeCoverageIgnoreStart
             return ['$ref' => 'undefined'];
+            // @codeCoverageIgnoreEnd
         }
 
         return ['$ref' => sprintf(
@@ -85,37 +108,25 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     }
 
     /**
-     * The child class must return a class name that implements the `ComponentObjectInterface` interface
+     * The child class must return a class name that implements the ComponentInterface interface
      *
      * @return string
      */
     abstract public function getAnnotationName() : string;
 
     /**
-     * Tries to find a referenced object that implements the `ComponentObjectInterface` interface
+     * Tries to get an annotation referenced by this annotation and returns the result
      *
      * @param AnnotationReader $annotationReader
-     * @param ReflectionClass $holder
+     * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $holder
      *
-     * @return ComponentObjectInterface
+     * @return ComponentInterface
      *
      * @throws InvalidReferenceException
      */
-    public function getAnnotation(AnnotationReader $annotationReader, ReflectionClass $holder = null) : ComponentObjectInterface
+    public function getAnnotation(AnnotationReader $annotationReader, ?Reflector $holder = null) : ComponentInterface
     {
-        if (false !== \strpos($this->class, '.')) {
-            list($this->class, $this->property) = \explode('.', $this->class, 2);
-        } elseif (false !== \strpos($this->class, '@')) {
-            list($this->class, $this->method) = \explode('@', $this->class, 2);
-        }
-
-        if (isset($holder)) {
-            if ('' === $this->class) {
-                $this->class = $holder->getName();
-            } elseif (false === \strpos($this->class, '\\') && $holder->getNamespaceName()) {
-                $this->class = $holder->getNamespaceName() . '\\' . $this->class;
-            }
-        }
+        $this->normalizeSelf($holder);
 
         $key = hash(
             'md5',
@@ -125,7 +136,7 @@ abstract class AbstractAnnotationReference implements ObjectInterface
             $this->getAnnotationName()
         );
 
-        $this->referencedObject =& self::$cache[$key];
+        $this->referencedObject =& self::$annotations[$key];
 
         if (isset($this->referencedObject)) {
             return $this->referencedObject;
@@ -143,122 +154,165 @@ abstract class AbstractAnnotationReference implements ObjectInterface
     }
 
     /**
-     * Proxy to `AnnotationReader::getMethodAnnotation()` with validation
+     * Tries to get an annotation referenced by this annotation through the class name and returns the result
      *
      * @param AnnotationReader $annotationReader
      *
-     * @return ComponentObjectInterface
+     * @return ComponentInterface
      *
      * @throws InvalidReferenceException
-     *
-     * @see AnnotationReader::getMethodAnnotation()
      */
-    private function getMethodAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
-    {
-        if (!method_exists($this->class, $this->method)) {
-            $message = 'Annotation %s refers to non-existent method %s::%s()';
-            throw new InvalidReferenceException(
-                sprintf($message, get_called_class(), $this->class, $this->method)
-            );
-        }
-
-        $reflection = new ReflectionMethod($this->class, $this->method);
-
-        $object = $annotationReader->getMethodAnnotation($reflection, $this->getAnnotationName());
-
-        if (null === $object) {
-            $message = 'Method %s::%s() does not contain the annotation %s';
-            throw new InvalidReferenceException(
-                sprintf($message, $this->class, $this->method, $this->getAnnotationName())
-            );
-        }
-
-        $object->_holder = $reflection->getDeclaringClass();
-
-        if (null === $object->refName) {
-            $object->refName = $reflection->getDeclaringClass()->getShortName() . '.fn_' . $reflection->getName();
-        }
-
-        return $object;
-    }
-
-    /**
-     * Proxy to `AnnotationReader::getPropertyAnnotation()` with validation
-     *
-     * @param AnnotationReader $annotationReader
-     *
-     * @return ComponentObjectInterface
-     *
-     * @throws InvalidReferenceException
-     *
-     * @see AnnotationReader::getPropertyAnnotation()
-     */
-    private function getPropertyAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
-    {
-        if (!property_exists($this->class, $this->property)) {
-            $message = 'Annotation %s refers to non-existent property %s::$%s';
-            throw new InvalidReferenceException(
-                sprintf($message, get_called_class(), $this->class, $this->property)
-            );
-        }
-
-        $reflection = new ReflectionProperty($this->class, $this->property);
-
-        $object = $annotationReader->getPropertyAnnotation($reflection, $this->getAnnotationName());
-
-        if (null === $object) {
-            $message = 'Property %s::$%s does not contain the annotation %s';
-            throw new InvalidReferenceException(
-                sprintf($message, $this->class, $this->property, $this->getAnnotationName())
-            );
-        }
-
-        $object->_holder = $reflection->getDeclaringClass();
-
-        if (null === $object->refName) {
-            $object->refName = $reflection->getDeclaringClass()->getShortName() . '.' . $reflection->getName();
-        }
-
-        return $object;
-    }
-
-    /**
-     * Proxy to `AnnotationReader::getClassAnnotation()` with validation
-     *
-     * @param AnnotationReader $annotationReader
-     *
-     * @return ComponentObjectInterface
-     *
-     * @throws InvalidReferenceException
-     *
-     * @see AnnotationReader::getClassAnnotation()
-     */
-    private function getClassAnnotation(AnnotationReader $annotationReader) : ComponentObjectInterface
+    private function getClassAnnotation(AnnotationReader $annotationReader) : ComponentInterface
     {
         if (!class_exists($this->class)) {
-            $message = 'Annotation %s refers to non-existent class %s';
-            throw new InvalidReferenceException(
-                sprintf($message, get_called_class(), $this->class)
-            );
+            throw new InvalidReferenceException(sprintf(
+                'Annotation %s refers to non-existent class %s',
+                get_called_class(),
+                $this->class
+            ));
         }
 
-        $reflection = new ReflectionClass($this->class);
+        $class = new ReflectionClass($this->class);
 
-        $object = $annotationReader->getClassAnnotation($reflection, $this->getAnnotationName());
+        $annotation = $annotationReader->getClassAnnotation($class, $this->getAnnotationName());
 
-        if (null === $object) {
-            $message = 'Class %s does not contain the annotation %s';
-            throw new InvalidReferenceException(
-                sprintf($message, $this->class, $this->getAnnotationName())
-            );
+        if (null === $annotation) {
+            throw new InvalidReferenceException(sprintf(
+                'Class %s does not contain the annotation %s',
+                $this->class,
+                $this->getAnnotationName()
+            ));
         }
 
-        $object->_holder = $reflection;
-
-        if (null === $object->refName) {
-            $object->refName = $reflection->getShortName();
+        if (null === $annotation->refName) {
+            $annotation->refName = $class->getShortName();
         }
 
-        return $object;
+        $annotation->setHolder($class);
+
+        return $annotation;
+    }
+
+    /**
+     * Tries to get an annotation referenced by this annotation through the class method and returns the result
+     *
+     * @param AnnotationReader $annotationReader
+     *
+     * @return ComponentInterface
+     *
+     * @throws InvalidReferenceException
+     */
+    private function getMethodAnnotation(AnnotationReader $annotationReader) : ComponentInterface
+    {
+        if (!method_exists($this->class, $this->method)) {
+            throw new InvalidReferenceException(sprintf(
+                'Annotation %s refers to non-existent method %s::%s()',
+                get_called_class(),
+                $this->class,
+                $this->method
+            ));
+        }
+
+        $method = new ReflectionMethod($this->class, $this->method);
+
+        $annotation = $annotationReader->getMethodAnnotation($method, $this->getAnnotationName());
+
+        if (null === $annotation) {
+            throw new InvalidReferenceException(sprintf(
+                'Method %s::%s() does not contain the annotation %s',
+                $this->class,
+                $this->method,
+                $this->getAnnotationName()
+            ));
+        }
+
+        if (null === $annotation->refName) {
+            $annotation->refName = $method->getDeclaringClass()->getShortName() . '.' . $method->getName();
+        }
+
+        $annotation->setHolder($method);
+
+        return $annotation;
+    }
+
+    /**
+     * Tries to get an annotation referenced by this annotation through the class property and returns the result
+     *
+     * @param AnnotationReader $annotationReader
+     *
+     * @return ComponentInterface
+     *
+     * @throws InvalidReferenceException
+     */
+    private function getPropertyAnnotation(AnnotationReader $annotationReader) : ComponentInterface
+    {
+        if (!property_exists($this->class, $this->property)) {
+            throw new InvalidReferenceException(sprintf(
+                'Annotation %s refers to non-existent property %s::$%s',
+                get_called_class(),
+                $this->class,
+                $this->property
+            ));
+        }
+
+        $property = new ReflectionProperty($this->class, $this->property);
+
+        $annotation = $annotationReader->getPropertyAnnotation($property, $this->getAnnotationName());
+
+        if (null === $annotation) {
+            throw new InvalidReferenceException(sprintf(
+                'Property %s::$%s does not contain the annotation %s',
+                $this->class,
+                $this->property,
+                $this->getAnnotationName()
+            ));
+        }
+
+        if (null === $annotation->refName) {
+            $annotation->refName = $property->getDeclaringClass()->getShortName() . '.' . $property->getName();
+        }
+
+        $annotation->setHolder($property);
+
+        return $annotation;
+    }
+
+    /**
+     * Normalizes the reference
+     *
+     * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $holder
+     *
+     * @return void
+     */
+    private function normalizeSelf(?Reflector $holder = null) : void
+    {
+        // e.g. SomeReference("App\Class@method")
+        if (false !== strpos($this->class, '@')) {
+            list($this->class, $this->method) = explode('@', $this->class, 2);
+
+        // e.g. SomeReference("App\Class.property")
+        } elseif (false !== strpos($this->class, '.')) {
+            list($this->class, $this->property) = explode('.', $this->class, 2);
+        }
+
+        // It's impossible...
+        if (null === $holder) {
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
+        $refClass = ($holder instanceof ReflectionClass) ? $holder : $holder->getDeclaringClass();
+
+        // When a property or method only was set,
+        // e.g. SomeReference(".property")
+        if ('' === $this->class) {
+            $this->class = $refClass->getName();
+
+        // When an unnamespaced class was set,
+        // e.g. SomeReference("Class.property")
+        } elseif (false === strpos($this->class, '\\')) {
+            $this->class = $refClass->getNamespaceName() . '\\' . $this->class;
+        }
     }
 }
