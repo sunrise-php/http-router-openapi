@@ -1,4 +1,4 @@
-## OpenApi (Swagger) Specification support for Sunrise router
+## OpenApi (Swagger) Specification support for Sunrise Router
 
 [![Build Status](https://circleci.com/gh/sunrise-php/http-router-openapi.svg?style=shield)](https://circleci.com/gh/sunrise-php/http-router-openapi)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router-openapi/?branch=master)
@@ -9,12 +9,8 @@
 
 ---
 
-## Installation via composer
+## Installation
 
 ```bash
-composer require 'sunrise/http-router-openapi'
+composer require 'sunrise/http-router-openapi:^2.0'
 ```
-
----
-
-[All details on the router page.](https://github.com/sunrise-php/http-router)
