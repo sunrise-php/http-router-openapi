@@ -12,9 +12,9 @@
 namespace Sunrise\Http\Router\OpenApi;
 
 /**
- * ComponentObjectInterface
+ * ComponentInterface
  */
-interface ComponentObjectInterface extends ObjectInterface
+interface ComponentInterface extends ObjectInterface
 {
 
     /**
