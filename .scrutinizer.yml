@@ -2,14 +2,15 @@ build:
   environment:
     php:
       version: '8.0'
-      pecl_extensions:
-        - yaml
   nodes:
     analysis:
       tests:
         override:
           - php-scrutinizer-run
     coverage:
+      before:
+        - sudo apt install libyaml-dev -y
+        - sudo pecl install yaml
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
