@@ -9,7 +9,9 @@ jobs:
       - image: circleci/php:7.1-cli-node-browsers
     steps:
       - checkout
-      - run: sudo apt install libyaml-dev -y
+      - run: sudo apt update -y
+      - run: sudo apt install -y libyaml-dev
+      - run: sudo pecl channel-update pecl.php.net
       - run: sudo pecl install yaml
       - run: sudo docker-php-ext-enable yaml
       - run: php -v
@@ -20,7 +22,9 @@ jobs:
       - image: circleci/php:7.2-cli-node-browsers
     steps:
       - checkout
-      - run: sudo apt install libyaml-dev -y
+      - run: sudo apt update -y
+      - run: sudo apt install -y libyaml-dev
+      - run: sudo pecl channel-update pecl.php.net
       - run: sudo pecl install yaml
       - run: sudo docker-php-ext-enable yaml
       - run: php -v
@@ -31,7 +35,9 @@ jobs:
       - image: circleci/php:7.3-cli-node-browsers
     steps:
       - checkout
-      - run: sudo apt install libyaml-dev -y
+      - run: sudo apt update -y
+      - run: sudo apt install -y libyaml-dev
+      - run: sudo pecl channel-update pecl.php.net
       - run: sudo pecl install yaml
       - run: sudo docker-php-ext-enable yaml
       - run: php -v
@@ -42,7 +48,9 @@ jobs:
       - image: circleci/php:7.4-cli-node-browsers
     steps:
       - checkout
-      - run: sudo apt install libyaml-dev -y
+      - run: sudo apt update -y
+      - run: sudo apt install -y libyaml-dev
+      - run: sudo pecl channel-update pecl.php.net
       - run: sudo pecl install yaml
       - run: sudo docker-php-ext-enable yaml
       - run: php -v
@@ -53,7 +61,9 @@ jobs:
       - image: circleci/php:8.0-cli-node-browsers
     steps:
       - checkout
-      - run: sudo apt install libyaml-dev -y
+      - run: sudo apt update -y
+      - run: sudo apt install -y libyaml-dev
+      - run: sudo pecl channel-update pecl.php.net
       - run: sudo pecl install yaml
       - run: sudo docker-php-ext-enable yaml
       - run: php -v
