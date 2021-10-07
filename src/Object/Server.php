@@ -19,16 +19,18 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS Server Object
  *
+ * An object representing a Server.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#server-object
  */
-class Server extends AbstractObject
+final class Server extends AbstractObject
 {
 
     /**
      * A URL to the target host
      *
-     * This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to
-     * the location where the OpenAPI document is being served.
+     * This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to the
+     * location where the OpenAPI document is being served.
      *
      * Variable substitutions will be made when a variable is named in {brackets}.
      *
@@ -46,7 +48,6 @@ class Server extends AbstractObject
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-serverdescription
-     *
      * @link https://spec.commonmark.org/
      */
     protected $description;

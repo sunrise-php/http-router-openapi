@@ -25,7 +25,7 @@ final class HeaderReference extends AbstractAnnotationReference implements Heade
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

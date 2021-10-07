@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-00/schema#",
+    "type": "object",
+    "properties": {
+        "limit": {
+            "$ref": "#/definitions/UserController.limit"
+        }
+    },
+    "definitions": {
+        "UserController.limit": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        }
+    }
+}

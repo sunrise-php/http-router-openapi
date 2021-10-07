@@ -19,13 +19,18 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS Info Object
  *
+ * The object provides metadata about the API.
+ *
+ * The metadata MAY be used by the clients if needed,and MAY be presented in editing
+ * or documentation generation tools for convenience.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#info-object
  */
-class Info extends AbstractObject
+final class Info extends AbstractObject
 {
 
     /**
-     * The title of the application
+     * The title of the API
      *
      * @var string
      *
@@ -34,20 +39,30 @@ class Info extends AbstractObject
     protected $title;
 
     /**
-     * A short description of the application
+     * A short summary of the API
+     *
+     * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#user-content-infosummary
+     */
+    protected $summary;
+
+    /**
+     * A description of the API
      *
      * CommonMark syntax MAY be used for rich text representation.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infodescription
-     *
      * @link https://spec.commonmark.org/
      */
     protected $description;
 
     /**
-     * A URL to the Terms of Service for the API. MUST be in the format of a URL
+     * A URL to the Terms of Service for the API
+     *
+     * This MUST be in the form of a URL.
      *
      * @var string
      *
@@ -74,12 +89,12 @@ class Info extends AbstractObject
     protected $license;
 
     /**
-     * The version of the OpenAPI document
+     * The version of the OpenAPI document –
+     * which is distinct from the OpenAPI Specification version or the API implementation version.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-infoversion
-     *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#oasVersion
      */
     protected $version;
@@ -92,6 +107,16 @@ class Info extends AbstractObject
     {
         $this->title = $title;
         $this->version = $version;
+    }
+
+    /**
+     * @param string $summary
+     *
+     * @return void
+     */
+    public function setSummary(string $summary) : void
+    {
+        $this->summary = $summary;
     }
 
     /**

@@ -14,35 +14,57 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * Import classes
  */
+use Doctrine\Common\Annotations\Reader as AnnotationReader;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation as OperationAnnotation;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter as ParameterAnnotation;
-use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema as SchemaAnnotation;
+use Psr\SimpleCache\CacheInterface;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
 use Sunrise\Http\Router\OpenApi\Object\Server;
 use Sunrise\Http\Router\OpenApi\Object\Tag;
+use Sunrise\Http\Router\OpenApi\Utility\OperationConverter;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
+use ReflectionMethod;
+use Reflector;
+use RuntimeException;
 
 /**
  * Import functions
  */
 use function Sunrise\Http\Router\path_parse;
 use function Sunrise\Http\Router\path_plain;
+use function extension_loaded;
+use function hash;
+use function is_array;
 use function json_encode;
 use function strtolower;
+use function yaml_emit;
+
+/**
+ * Import constants
+ */
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use const YAML_ANY_BREAK;
+use const YAML_ANY_ENCODING;
 
 /**
  * OAS OpenAPI Object
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
  */
-class OpenApi extends AbstractObject
+final class OpenApi extends AbstractObject
 {
 
     /**
+     * The package annotations namespace
+     *
      * @var string
      */
     public const ANNOTATIONS_NAMESPACE = 'Sunrise\Http\Router\OpenApi\Annotation';
@@ -57,7 +79,6 @@ class OpenApi extends AbstractObject
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasversion
-     *
      * @link https://semver.org/spec/v2.0.0.html
      */
     protected $openapi = '3.0.2';
@@ -88,7 +109,7 @@ class OpenApi extends AbstractObject
     /**
      * The available paths and operations for the API
      *
-     * @var array
+     * @var array<string, array<string, Operation>>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oaspaths
      */
@@ -97,7 +118,7 @@ class OpenApi extends AbstractObject
     /**
      * An element to hold various schemas for the specification
      *
-     * @var array
+     * @var array<string, array<string, ComponentInterface>>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oascomponents
      */
@@ -145,47 +166,111 @@ class OpenApi extends AbstractObject
     protected $externalDocs;
 
     /**
-     * @var SimpleAnnotationReader
+     * @var CacheInterface|null
      */
-    private $annotationReader;
+    private $cache = null;
 
     /**
-     * @var bool
+     * @var array<string, RouteInterface>
      */
-    private $includeUndescribedOperations = true;
+    private $routes = [];
 
     /**
+     * Constructor of the class
+     *
      * @param Info $info
      */
     public function __construct(Info $info)
     {
         $this->info = $info;
-
-        $this->annotationReader = new SimpleAnnotationReader();
-        $this->annotationReader->addNamespace(self::ANNOTATIONS_NAMESPACE);
     }
 
     /**
-     * @param int $options
+     * @param string $operationId
      *
-     * @return string
+     * @return array|null
      */
-    public function toJson(int $options = 0) : string
+    public function getRequestCookieJsonSchema(string $operationId) : ?array
     {
-        return json_encode($this->toArray(), $options);
+        $operations = $this->getCachedOperations();
+        if (isset($operations[$operationId])) {
+            return (new OperationConverter($operations[$operationId]))
+                ->toRequestCookieJsonSchema();
+        }
+
+        return null;
     }
 
     /**
-     * @param bool $value
+     * @param string $operationId
      *
-     * @return void
+     * @return array|null
      */
-    public function includeUndescribedOperations(bool $value) : void
+    public function getRequestHeaderJsonSchema(string $operationId) : ?array
     {
-        $this->includeUndescribedOperations = $value;
+        $operations = $this->getCachedOperations();
+        if (isset($operations[$operationId])) {
+            return (new OperationConverter($operations[$operationId]))
+                ->toRequestHeaderJsonSchema();
+        }
+
+        return null;
     }
 
     /**
+     * @param string $operationId
+     *
+     * @return array|null
+     */
+    public function getRequestQueryJsonSchema(string $operationId) : ?array
+    {
+        $operations = $this->getCachedOperations();
+        if (isset($operations[$operationId])) {
+            return (new OperationConverter($operations[$operationId]))
+                ->toRequestQueryJsonSchema();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $operationId
+     * @param string $contentType
+     *
+     * @return array|null
+     */
+    public function getRequestBodyJsonSchema(string $operationId, ?string $contentType = null) : ?array
+    {
+        $operations = $this->getCachedOperations();
+        if (isset($operations[$operationId])) {
+            return (new OperationConverter($operations[$operationId]))
+                ->toRequestBodyJsonSchema($contentType ?? 'application/json');
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $operationId
+     * @param mixed $statusCode
+     * @param string $contentType
+     *
+     * @return array|null
+     */
+    public function getResponseBodyJsonSchema(string $operationId, $statusCode, ?string $contentType = null) : ?array
+    {
+        $operations = $this->getCachedOperations();
+        if (isset($operations[$operationId])) {
+            return (new OperationConverter($operations[$operationId]))
+                ->toResponseBodyJsonSchema($statusCode, $contentType ?? 'application/json');
+        }
+
+        return null;
+    }
+
+    /**
+     * Adds the given Server Object(s) to the OA object
+     *
      * @param Server ...$servers
      *
      * @return void
@@ -198,44 +283,22 @@ class OpenApi extends AbstractObject
     }
 
     /**
-     * @param RouteInterface ...$routes
+     * Adds the given Component Object(s) to the OA object
+     *
+     * @param ComponentInterface ...$components
      *
      * @return void
      */
-    public function addRoute(RouteInterface ...$routes) : void
+    public function addComponent(ComponentInterface ...$components) : void
     {
-        foreach ($routes as $route) {
-            $path = path_plain($route->getPath());
-            $operation = $this->fetchOperation($route);
-
-            if (null === $operation) {
-                continue;
-            }
-
-            $this->addComponentObject(...$operation->getReferencedObjects($this->annotationReader));
-
-            foreach ($route->getMethods() as $method) {
-                /** @see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#fixed-fields-7 */
-                $method = strtolower($method);
-
-                $this->paths[$path][$method] = $operation;
-            }
+        foreach ($components as $component) {
+            $this->components[$component->getComponentName()][$component->getReferenceName()] = $component;
         }
     }
 
     /**
-     * @param ComponentObjectInterface ...$objects
+     * Adds the given Security Requirement Object(s) to the OA object
      *
-     * @return void
-     */
-    public function addComponentObject(ComponentObjectInterface ...$objects) : void
-    {
-        foreach ($objects as $object) {
-            $this->components[$object->getComponentName()][$object->getReferenceName()] = $object;
-        }
-    }
-
-    /**
      * @param SecurityRequirement ...$requirements
      *
      * @return void
@@ -248,6 +311,8 @@ class OpenApi extends AbstractObject
     }
 
     /**
+     * Adds the given Tag Object(s) to the OA object
+     *
      * @param Tag ...$tags
      *
      * @return void
@@ -260,6 +325,8 @@ class OpenApi extends AbstractObject
     }
 
     /**
+     * Sets the given External Documentation Object to the OA object
+     *
      * @param ExternalDocumentation $externalDocs
      *
      * @return void
@@ -270,68 +337,216 @@ class OpenApi extends AbstractObject
     }
 
     /**
-     * Fetches OAS Operation Object from the given route
+     * @param CacheInterface|null $cache
      *
-     * This method always returns an instance of the Operation Object,
-     * even if the given route doesn't contain it.
+     * @return void
+     */
+    public function setCache(?CacheInterface $cache) : void
+    {
+        $this->cache = $cache;
+    }
+
+    /**
+     * @param RouteInterface ...$routes
      *
-     * If you do not want to include undescribed operations,
-     * use the `$openapi->includeUndescribedOperations(false)` method.
+     * @return void
+     */
+    public function addRoute(RouteInterface ...$routes) : void
+    {
+        foreach ($routes as $route) {
+            $this->routes[$route->getName()] = $route;
+        }
+    }
+
+    /**
+     * Converts the object to JSON string
+     *
+     * @return string
+     */
+    public function toJson() : string
+    {
+        return json_encode($this->toArray(), JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Converts the object to YAML string
+     *
+     * @return string
+     *
+     * @throws RuntimeException
+     *         If the yaml extension isn't installed.
+     */
+    public function toYaml() : string
+    {
+        if (!extension_loaded('yaml')) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException('The yaml extension is required.');
+            // @codeCoverageIgnoreEnd
+        }
+
+        return yaml_emit($this->toArray(), YAML_ANY_ENCODING, YAML_ANY_BREAK);
+    }
+
+    /**
+     * Builds and converts the object to an array using caching mechanism
+     *
+     * {@inheritdoc}
+     */
+    public function toArray() : array
+    {
+        $key = $this->getBuildCacheKey();
+
+        if ($this->cache && $this->cache->has($key)) {
+            return $this->cache->get($key);
+        }
+
+        $result = $this->build();
+
+        if ($this->cache) {
+            $this->cache->set($key, $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Gets build cache key
+     *
+     * @return string
+     */
+    public function getBuildCacheKey() : string
+    {
+        return hash('md5', 'router:openapi:build');
+    }
+
+    /**
+     * Gets operations cache key
+     *
+     * @return string
+     */
+    public function getOperationsCacheKey() : string
+    {
+        return hash('md5', 'router:openapi:operations');
+    }
+
+    /**
+     * Builds the object and returns the result as an array
+     *
+     * @return array
+     */
+    private function build() : array
+    {
+        $operations = $this->getCachedOperations();
+        foreach ($operations as $operation) {
+            if (isset($this->routes[$operation->operationId])) {
+                $this->addComponent(...$operation->getReferencedObjects());
+
+                $path = path_plain($this->routes[$operation->operationId]->getPath());
+                foreach ($this->routes[$operation->operationId]->getMethods() as $method) {
+                    // https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#fixed-fields-7
+                    $lcmethod = strtolower($method);
+
+                    $this->paths[$path][$lcmethod] = $operation;
+                }
+            }
+        }
+
+        return parent::toArray();
+    }
+
+    /**
+     * Gets cached operations from routes
+     *
+     * @return array<string, Operation>
+     */
+    private function getCachedOperations() : array
+    {
+        $key = $this->getOperationsCacheKey();
+
+        if ($this->cache && $this->cache->has($key)) {
+            return $this->cache->get($key);
+        }
+
+        $operations = $this->getOperations();
+
+        if ($this->cache) {
+            $this->cache->set($key, $operations);
+        }
+
+        return $operations;
+    }
+
+    /**
+     * Gets operations from routes
+     *
+     * @return array<string, Operation>
+     */
+    private function getOperations() : array
+    {
+        $annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
+        $annotationReader->addNamespace(self::ANNOTATIONS_NAMESPACE);
+
+        $operations = [];
+        foreach ($this->routes as $route) {
+            $operation = $this->getRouteOperation($route, $annotationReader);
+            if (isset($operation)) {
+                $operations[$operation->operationId] = $operation;
+            }
+        }
+
+        return $operations;
+    }
+
+    /**
+     * Gets the given route operation
+     *
+     * TODO: Can be moved to a new abstract layer,
+     *       which would make support for any router...
      *
      * @param RouteInterface $route
+     * @param AnnotationReader $annotationReader
      *
-     * @return null|OperationAnnotation
+     * @return Operation|null
      */
-    private function fetchOperation(RouteInterface $route) : ?OperationAnnotation
+    private function getRouteOperation(RouteInterface $route, AnnotationReader $annotationReader) : ?Operation
     {
-        $operation = $this->annotationReader->getClassAnnotation(
-            new ReflectionClass($route->getRequestHandler()),
-            OperationAnnotation::class
-        );
+        $holder = $this->getRouteHolder($route);
+        if (null === $holder) {
+            return null;
+        }
+
+        $operation = ($holder instanceof ReflectionClass) ?
+            $annotationReader->getClassAnnotation($holder, Operation::class) :
+            $annotationReader->getMethodAnnotation($holder, Operation::class);
 
         if (null === $operation) {
-            if (false === $this->includeUndescribedOperations) {
-                return null;
-            }
-
-            $operation = new OperationAnnotation();
+            return null;
         }
 
-        if (null === $operation->operationId) {
-            $operation->operationId = $route->getName();
+        // override the operation ID...
+        $operation->operationId = $route->getName();
+
+        if (empty($operation->summary) && !empty($summary = $route->getSummary())) {
+            $operation->summary = $summary;
         }
 
-        if (null === $operation->tags) {
-            $routeTags = $route->getTags();
-            if ([] !== $routeTags) {
-                $operation->tags = $routeTags;
-            }
+        if (empty($operation->description) && !empty($description = $route->getDescription())) {
+            $operation->description = $description;
         }
 
-        if (null === $operation->summary) {
-            $routeSummary = $route->getSummary();
-            if ('' !== $routeSummary) {
-                $operation->summary = $routeSummary;
-            }
-        }
-
-        if (null === $operation->description) {
-            $routeDescription = $route->getDescription();
-            if ('' !== $routeDescription) {
-                $operation->description = $routeDescription;
-            }
+        if (empty($operation->tags) && !empty($tags = $route->getTags())) {
+            $operation->tags = $tags;
         }
 
         $attributes = path_parse($route->getPath());
-
         foreach ($attributes as $attribute) {
-            $parameter = new ParameterAnnotation();
+            $parameter = new Parameter();
             $parameter->in = 'path';
             $parameter->name = $attribute['name'];
             $parameter->required = !$attribute['isOptional'];
 
             if (isset($attribute['pattern'])) {
-                $parameter->schema = new SchemaAnnotation();
+                $parameter->schema = new Schema();
                 $parameter->schema->type = 'string';
                 $parameter->schema->pattern = $attribute['pattern'];
             }
@@ -339,6 +554,36 @@ class OpenApi extends AbstractObject
             $operation->parameters[] = $parameter;
         }
 
+        $operation->setHolder($holder);
+        $operation->collectReferencedObjects($annotationReader);
+
         return $operation;
+    }
+
+    /**
+     * Gets the given route holder
+     *
+     * @param RouteInterface $route
+     *
+     * @return ReflectionClass|ReflectionMethod|null
+     */
+    private function getRouteHolder(RouteInterface $route) : ?Reflector
+    {
+        $holder = $route->getHolder();
+        if (isset($holder)) {
+            return $holder;
+        }
+
+        $handler = $route->getRequestHandler();
+        if (!($handler instanceof CallableRequestHandler)) {
+            return new ReflectionClass($handler);
+        }
+
+        $callback = $handler->getCallback();
+        if (is_array($callback)) {
+            return new ReflectionMethod(...$callback);
+        }
+
+        return null;
     }
 }

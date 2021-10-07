@@ -6,8 +6,8 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\OpenApi\Object\Contact;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
+use Sunrise\Http\Router\OpenApi\Object\Contact;
 
 /**
  * ContactTest
@@ -20,7 +20,7 @@ class ContactTest extends TestCase
      */
     public function testContracts() : void
     {
-        $object = new Contact('foo');
+        $object = new Contact();
 
         $this->assertInstanceOf(AbstractObject::class, $object);
     }
@@ -28,9 +28,10 @@ class ContactTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testSetName() : void
     {
-        $object = new Contact('foo');
+        $object = new Contact();
+        $object->setName('foo');
 
         $this->assertSame([
             'name' => 'foo',
@@ -42,12 +43,11 @@ class ContactTest extends TestCase
      */
     public function testSetUrl() : void
     {
-        $object = new Contact('foo');
-        $object->setUrl('bar');
+        $object = new Contact();
+        $object->setUrl('foo');
 
         $this->assertSame([
-            'name' => 'foo',
-            'url' => 'bar',
+            'url' => 'foo',
         ], $object->toArray());
     }
 
@@ -56,12 +56,11 @@ class ContactTest extends TestCase
      */
     public function testSetEmail() : void
     {
-        $object = new Contact('foo');
-        $object->setEmail('bar');
+        $object = new Contact();
+        $object->setEmail('foo');
 
         $this->assertSame([
-            'name' => 'foo',
-            'email' => 'bar',
+            'email' => 'foo',
         ], $object->toArray());
     }
 }

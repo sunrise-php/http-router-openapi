@@ -6,9 +6,9 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\OpenApi\AbstractObject;
 use Sunrise\Http\Router\OpenApi\Object\OAuthFlow;
 use Sunrise\Http\Router\OpenApi\Object\OAuthFlows;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
 
 /**
  * OAuthFlowsTest

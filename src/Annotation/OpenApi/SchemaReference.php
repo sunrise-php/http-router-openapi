@@ -25,7 +25,7 @@ final class SchemaReference extends AbstractAnnotationReference implements Schem
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

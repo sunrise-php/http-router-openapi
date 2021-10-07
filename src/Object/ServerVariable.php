@@ -19,9 +19,11 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS Server Variable Object
  *
+ * An object representing a Server Variable for server URL template substitution.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#server-variable-object
  */
-class ServerVariable extends AbstractObject
+final class ServerVariable extends AbstractObject
 {
 
     /**
@@ -34,6 +36,8 @@ class ServerVariable extends AbstractObject
     /**
      * An enumeration of string values to be used if the substitution options are from a limited set
      *
+     * The array MUST NOT be empty.
+     *
      * @var string[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-servervariableenum
@@ -43,13 +47,12 @@ class ServerVariable extends AbstractObject
     /**
      * The default value to use for substitution, which SHALL be sent if an alternate value is not supplied
      *
-     * Note this behavior is different than the Schema Object's treatment of default values,
-     * because in those cases parameter values are optional.
+     * Note this behavior is different than the Schema Object's treatment of default values, because in those cases
+     * parameter values are optional. If the enum is defined, the value MUST exist in the enum's values.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-servervariabledefault
-     *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object
      */
     protected $default;

@@ -1,0 +1,189 @@
+---
+openapi: 3.0.2
+info:
+  title: Some application
+  version: 1.0.0
+paths:
+  /:
+    get:
+      operationId: home
+      responses:
+        200:
+          $ref: '#/components/responses/EmptyResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /users:
+    get:
+      operationId: users.list
+      tags:
+      - foo
+      - bar
+      summary: A list of users
+      description: Returns a list of user models
+      parameters:
+      - in: cookie
+        name: limit
+        schema:
+          $ref: '#/components/schemas/UserController.limit'
+      - in: header
+        name: x-limit
+        schema:
+          $ref: '#/components/schemas/UserController.limit'
+      - in: query
+        name: limit
+        schema:
+          $ref: '#/components/schemas/UserController.limit'
+      responses:
+        200:
+          $ref: '#/components/responses/UserListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      operationId: users.create
+      parameters:
+      - $ref: '#/components/parameters/UserController.getKey'
+      requestBody:
+        $ref: '#/components/requestBodies/UserCreateRequest'
+      responses:
+        201:
+          $ref: '#/components/responses/EmptyResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /users/{id}:
+    get:
+      operationId: users.read
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          pattern: \d+
+          type: string
+      responses:
+        200:
+          $ref: '#/components/responses/UserResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      operationId: users.update
+      parameters:
+      - $ref: '#/components/parameters/UserController.getKey'
+      - name: id
+        in: path
+        required: true
+        schema:
+          pattern: \d+
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UserUpdateRequest'
+      responses:
+        200:
+          $ref: '#/components/responses/EmptyResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      operationId: users.delete
+      parameters:
+      - $ref: '#/components/parameters/UserController.getKey'
+      - name: id
+        in: path
+        required: true
+        schema:
+          pattern: \d+
+          type: string
+      responses:
+        200:
+          $ref: '#/components/responses/EmptyResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  responses:
+    EmptyResponse:
+      description: Returns an empty response
+    ErrorResponse:
+      description: Returns an error model
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UserListResponse:
+      description: Returns a list of user models
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: '#/components/schemas/User'
+            type: array
+    UserResponse:
+      description: Returns an user model
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+  schemas:
+    Error:
+      properties:
+        code:
+          $ref: '#/components/schemas/Error.code'
+        message:
+          $ref: '#/components/schemas/Error.message'
+      type: object
+    Error.code:
+      type: integer
+    Error.message:
+      type: string
+    UserController.limit:
+      nullable: true
+      type: integer
+    User:
+      properties:
+        email:
+          $ref: '#/components/schemas/User.email'
+        password:
+          $ref: '#/components/schemas/User.password'
+      type: object
+    User.email:
+      format: email
+      type: string
+    User.password:
+      format: password
+      type: string
+    UserController.key:
+      format: uuid
+      type: string
+  parameters:
+    UserController.getKey:
+      in: header
+      name: x-key
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserController.key'
+  requestBodies:
+    UserCreateRequest:
+      content:
+        application/json:
+          schema:
+            properties:
+              email:
+                $ref: '#/components/schemas/User.email'
+              password:
+                $ref: '#/components/schemas/User.password'
+            required:
+            - email
+            - password
+            type: object
+        application/xml: []
+    UserUpdateRequest:
+      content:
+        application/json:
+          schema:
+            properties:
+              email:
+                $ref: '#/components/schemas/User.email'
+              password:
+                $ref: '#/components/schemas/User.password'
+            required:
+            - email
+            - password
+            type: object
+...

@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\OpenApi\AbstractObject;
 use Sunrise\Http\Router\OpenApi\Object\Contact;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\License;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
 
 /**
  * InfoTest
@@ -36,6 +36,21 @@ class InfoTest extends TestCase
 
         $this->assertSame([
             'title' => 'foo',
+            'version' => 'bar',
+        ], $object->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetSummary() : void
+    {
+        $object = new Info('foo', 'bar');
+        $object->setSummary('baz');
+
+        $this->assertSame([
+            'title' => 'foo',
+            'summary' => 'baz',
             'version' => 'bar',
         ], $object->toArray());
     }

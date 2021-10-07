@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  * Import classes
  */
 use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * Import functions
@@ -30,16 +30,16 @@ use function spl_object_hash;
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object
  * @link https://json-schema.org/draft/2019-09/json-schema-validation.html
  */
-final class Schema extends AbstractAnnotation implements SchemaInterface, ComponentObjectInterface
+final class Schema extends AbstractAnnotation implements SchemaInterface, ComponentInterface
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected const IGNORE_FIELDS = ['refName'];
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected const FIELD_ALIASES = ['allowAdditionalProperties' => 'additionalProperties'];
 
@@ -286,7 +286,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     public $xml;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getComponentName() : string
     {
@@ -294,7 +294,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface, Compon
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getReferenceName() : string
     {

@@ -15,14 +15,25 @@ namespace Sunrise\Http\Router\OpenApi\Object;
  * Import classes
  */
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 
 /**
  * OAS Security Scheme Object
  *
+ * Defines a security scheme that can be used by the operations.
+ *
+ * Supported schemes are HTTP authentication, an API key (either as a header, a cookie parameter or as a query
+ * parameter), mutual TLS (use of a client certificate), OAuth2's common flows (implicit, password, client credentials
+ * and authorization code) as defined in RFC6749, and OpenID Connect Discovery. Please note that as of 2020, the
+ * implicit flow is about to be deprecated by OAuth 2.0 Security Best Current Practice. Recommended for most use case is
+ * Authorization Code Grant flow with PKCE.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-scheme-object
+ * @link https://datatracker.ietf.org/doc/html/rfc6749
+ * @link https://datatracker.ietf.org/doc/html/draft-ietf-oauth-discovery-06
+ * @link https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics
  */
-class SecurityScheme extends AbstractObject implements ComponentObjectInterface
+final class SecurityScheme extends AbstractObject implements ComponentInterface
 {
 
     /**
@@ -33,7 +44,7 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
     /**
      * The type of the security scheme
      *
-     * Valid values are "apiKey", "http", "oauth2", "openIdConnect".
+     * Valid values are "apiKey", "http", "mutualTLS", "oauth2", "openIdConnect".
      *
      * @var string
      *
@@ -42,14 +53,13 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
     protected $type;
 
     /**
-     * A short description for security scheme
+     * A description for security scheme
      *
      * CommonMark syntax MAY be used for rich text representation.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-securityschemedescription
-     *
      * @link https://spec.commonmark.org/
      */
     protected $description;
@@ -77,11 +87,13 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
     /**
      * The name of the HTTP Authorization scheme to be used in the Authorization header as defined in RFC7235
      *
+     * The values used SHOULD be registered in the IANA Authentication Scheme registry.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-securityschemescheme
-     *
      * @link https://tools.ietf.org/html/rfc7235#section-5.1
+     * @link https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml
      */
     protected $scheme;
 
@@ -111,6 +123,8 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
      *
      * This MUST be in the form of a URL.
      *
+     * The OpenID Connect standard requires the use of TLS.
+     *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-securityschemeopenidconnecturl
@@ -128,7 +142,7 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getComponentName() : string
     {
@@ -136,7 +150,7 @@ class SecurityScheme extends AbstractObject implements ComponentObjectInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getReferenceName() : string
     {

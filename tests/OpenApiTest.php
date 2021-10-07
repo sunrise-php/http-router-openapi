@@ -6,33 +6,39 @@ namespace Sunrise\Http\Router\OpenApi\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException;
+use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
+use Sunrise\Http\Router\OpenApi\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
 use Sunrise\Http\Router\OpenApi\Object\Server;
 use Sunrise\Http\Router\OpenApi\Object\Tag;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
 use Sunrise\Http\Router\OpenApi\OpenApi;
-use Sunrise\Http\Router\OpenApi\Tests\Fixture;
-use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\OpenApi\Tests\Fixtures\OpenapiAwareTrait;
+use Sunrise\Http\Router\OpenApi\Tests\Fixtures\SomeApp\Controller\InvalidController;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+use Sunrise\Http\Router\Route;
+
+/**
+ * Import functions
+ */
+use function json_encode;
+
+/**
+ * Import constants
+ */
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * OpenApiTest
  */
 class OpenApiTest extends TestCase
 {
-
-    /**
-     * @return void
-     */
-    public function testContracts() : void
-    {
-        $object = new OpenApi(new Info('foo', 'bar'));
-
-        $this->assertInstanceOf(AbstractObject::class, $object);
-    }
+    use OpenapiAwareTrait;
 
     /**
      * @return void
@@ -82,21 +88,21 @@ class OpenApiTest extends TestCase
     /**
      * @return void
      */
-    public function testAddComponentObject() : void
+    public function testAddComponent() : void
     {
         $object = new OpenApi(new Info('foo', 'bar'));
 
-        $co1 = $this->createMock(ComponentObjectInterface::class);
-        $co1->method('getComponentName')->willReturn('foo');
-        $co1->method('getReferenceName')->willReturn('bar');
-        $co1->method('toArray')->willReturn(['baz']);
+        $com1 = $this->createMock(ComponentInterface::class);
+        $com1->method('getComponentName')->willReturn('foo');
+        $com1->method('getReferenceName')->willReturn('bar');
+        $com1->method('toArray')->willReturn(['baz']);
 
-        $co2 = $this->createMock(ComponentObjectInterface::class);
-        $co2->method('getComponentName')->willReturn('qux');
-        $co2->method('getReferenceName')->willReturn('quux');
-        $co2->method('toArray')->willReturn(['quuux']);
+        $com2 = $this->createMock(ComponentInterface::class);
+        $com2->method('getComponentName')->willReturn('qux');
+        $com2->method('getReferenceName')->willReturn('quux');
+        $com2->method('toArray')->willReturn(['quuux']);
 
-        $object->addComponentObject($co1, $co2);
+        $object->addComponent($com1, $com2);
 
         $this->assertSame([
             'openapi' => '3.0.2',
@@ -201,187 +207,76 @@ class OpenApiTest extends TestCase
     /**
      * @return void
      */
-    public function testAddRoute() : void
+    public function testGetRequestCookieJsonSchema() : void
     {
-        $route = $this->createMock(RouteInterface::class);
-        $route->method('getRequestHandler')->willReturn(new Fixture\PetStore\Endpoint());
-        $route->method('getName')->willReturn('foo');
-        $route->method('getMethods')->willReturn(['GET']);
-        $route->method('getPath')->willReturn('/foo(/{a<\d+>})/{b<\w+>}/{c}');
+        $file = __DIR__ . '/fixtures/SomeApp/json-schemas/users.list.cookie.request.json';
+        $jsonSchema = $this->getOpenapi()->getRequestCookieJsonSchema('users.list');
+        $jsonSchemaString = json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-        $object = new OpenApi(new Info('foo', 'bar'));
-        $object->addRoute($route);
-
-        $this->assertSame([
-            'openapi' => '3.0.2',
-            'info' => [
-                'title' => 'foo',
-                'version' => 'bar',
-            ],
-            'paths' => [
-                '/foo/{a}/{b}/{c}' => [
-                    'get' => [
-                        'operationId' => 'foo',
-                        'parameters' => [
-                            [
-                                'name' => 'a',
-                                'in' => 'path',
-                                'required' => false,
-                                'schema' => [
-                                    'pattern' => '\d+',
-                                    'type' => 'string',
-                                ],
-                            ],
-                            [
-                                'name' => 'b',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => [
-                                    'pattern' => '\w+',
-                                    'type' => 'string',
-                                ],
-                            ],
-                            [
-                                'name' => 'c',
-                                'in' => 'path',
-                                'required' => true,
-                            ],
-                        ],
-                        'responses' => [
-                            200 => [
-                                'description' => 'All okay',
-                            ],
-                            'default' => [
-                                'description' => 'Any error',
-                                'content' => [
-                                    'application/json' => [
-                                        'schema' => [
-                                            '$ref' => '#/components/schemas/Error',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            'components' => [
-                'schemas' => [
-                    'Error' => [
-                        'properties' => [
-                            'code' => [
-                                'format' => 'int32',
-                                'type' => 'integer',
-                            ],
-                            'message' => [
-                                'type' => 'string',
-                            ],
-                        ],
-                        'required' => [
-                            'code',
-                            'message',
-                        ],
-                        'type' => 'object',
-                    ],
-                ],
-            ],
-        ], $object->toArray());
+        $this->assertJsonStringEqualsJsonFile($file, $jsonSchemaString);
+        $this->assertNull($this->getOpenapi()->getRequestCookieJsonSchema('home'));
+        $this->assertNull($this->getOpenapi()->getRequestCookieJsonSchema('unknown'));
     }
 
     /**
      * @return void
      */
-    public function testAddRouteWithoutDescription() : void
+    public function testGetRequestHeaderJsonSchema() : void
     {
-        $handler = $this->createMock(RequestHandlerInterface::class);
+        $file = __DIR__ . '/fixtures/SomeApp/json-schemas/users.auth.header.request.json';
+        $jsonSchema = $this->getOpenapi()->getRequestHeaderJsonSchema('users.create');
+        $jsonSchemaString = json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-        $route = $this->createMock(RouteInterface::class);
-        $route->method('getRequestHandler')->willReturn($handler);
-        $route->method('getName')->willReturn('foo');
-        $route->method('getMethods')->willReturn(['GET']);
-        $route->method('getPath')->willReturn('/foo');
-
-        $object = new OpenApi(new Info('foo', 'bar'));
-        $object->addRoute($route);
-
-        $this->assertSame([
-            'openapi' => '3.0.2',
-            'info' => [
-                'title' => 'foo',
-                'version' => 'bar',
-            ],
-            'paths' => [
-                '/foo' => [
-                    'get' => [
-                        'operationId' => 'foo',
-                    ],
-                ],
-            ],
-        ], $object->toArray());
+        $this->assertJsonStringEqualsJsonFile($file, $jsonSchemaString);
+        $this->assertNull($this->getOpenapi()->getRequestHeaderJsonSchema('home'));
+        $this->assertNull($this->getOpenapi()->getRequestHeaderJsonSchema('unknown'));
     }
 
     /**
      * @return void
      */
-    public function testNotIncludeUndescribedRoutes() : void
+    public function testGetRequestQueryJsonSchema() : void
     {
-        $handler = $this->createMock(RequestHandlerInterface::class);
+        $file = __DIR__ . '/fixtures/SomeApp/json-schemas/users.list.query.request.json';
+        $jsonSchema = $this->getOpenapi()->getRequestQueryJsonSchema('users.list');
+        $jsonSchemaString = json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-        $route = $this->createMock(RouteInterface::class);
-        $route->method('getRequestHandler')->willReturn($handler);
-        $route->method('getName')->willReturn('foo');
-        $route->method('getMethods')->willReturn(['GET']);
-        $route->method('getPath')->willReturn('/foo');
-
-        $object = new OpenApi(new Info('foo', 'bar'));
-        $object->includeUndescribedOperations(false);
-        $object->addRoute($route);
-
-        $this->assertSame([
-            'openapi' => '3.0.2',
-            'info' => [
-                'title' => 'foo',
-                'version' => 'bar',
-            ],
-        ], $object->toArray());
+        $this->assertJsonStringEqualsJsonFile($file, $jsonSchemaString);
+        $this->assertNull($this->getOpenapi()->getRequestQueryJsonSchema('home'));
+        $this->assertNull($this->getOpenapi()->getRequestQueryJsonSchema('unknown'));
     }
 
     /**
      * @return void
      */
-    public function testRouteData() : void
+    public function testGetRequestBodyJsonSchema() : void
     {
-        $handler = $this->createMock(RequestHandlerInterface::class);
+        $file = __DIR__ . '/fixtures/SomeApp/json-schemas/users.create.body.request.json';
+        $jsonSchema = $this->getOpenapi()->getRequestBodyJsonSchema('users.create');
+        $jsonSchemaString = json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-        $route = $this->createMock(RouteInterface::class);
-        $route->method('getRequestHandler')->willReturn($handler);
-        $route->method('getName')->willReturn('foo');
-        $route->method('getMethods')->willReturn(['GET']);
-        $route->method('getPath')->willReturn('/foo');
-        $route->method('getTags')->willReturn(['foo', 'bar']);
-        $route->method('getSummary')->willReturn('summary of the route');
-        $route->method('getDescription')->willReturn('description of the route');
+        $this->assertJsonStringEqualsJsonFile($file, $jsonSchemaString);
+        $this->assertNull($this->getOpenapi()->getRequestBodyJsonSchema('users.create', 'application/xml'));
+        $this->assertNull($this->getOpenapi()->getRequestBodyJsonSchema('unknown'));
 
-        $object = new OpenApi(new Info('foo', 'bar'));
-        $object->addRoute($route);
+        $this->expectException(UnsupportedMediaTypeException::class);
+        $this->expectExceptionMessage('Unsupported Media Type');
 
-        $this->assertSame([
-            'openapi' => '3.0.2',
-            'info' => [
-                'title' => 'foo',
-                'version' => 'bar',
-            ],
-            'paths' => [
-                '/foo' => [
-                    'get' => [
-                        'operationId' => 'foo',
-                        'tags' => ['foo', 'bar'],
-                        'summary' => 'summary of the route',
-                        'description' => 'description of the route',
-                    ],
-                ],
-            ],
-        ], $object->toArray());
+        $this->getOpenapi()->getRequestBodyJsonSchema('users.create', 'application/graphql');
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetResponseBodyJsonSchema() : void
+    {
+        $file = __DIR__ . '/fixtures/SomeApp/json-schemas/users.read.body.response.json';
+        $jsonSchema = $this->getOpenapi()->getResponseBodyJsonSchema('users.read', 200);
+        $jsonSchemaString = json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+
+        $this->assertJsonStringEqualsJsonFile($file, $jsonSchemaString);
+        $this->assertNull($this->getOpenapi()->getResponseBodyJsonSchema('users.read', 400));
+        $this->assertNull($this->getOpenapi()->getResponseBodyJsonSchema('unknown', 200));
     }
 
     /**
@@ -389,10 +284,209 @@ class OpenApiTest extends TestCase
      */
     public function testJson() : void
     {
-        $object = new OpenApi(new Info('foo', 'bar'));
+        $file = __DIR__ . '/fixtures/SomeApp/openapi-documents/openapi.json';
+        $document = $this->getOpenapi()->toJson();
 
-        $expected = json_encode($object->toArray(), \JSON_PRETTY_PRINT);
+        $this->assertJsonStringEqualsJsonFile($file, $document);
+    }
 
-        $this->assertSame($expected, $object->toJson(\JSON_PRETTY_PRINT));
+    /**
+     * @return void
+     */
+    public function testYaml() : void
+    {
+        $file = __DIR__ . '/fixtures/SomeApp/openapi-documents/openapi.yml';
+        $document = $this->getOpenapi()->toYaml();
+
+        $this->assertStringEqualsFile($file, $document);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildCache() : void
+    {
+        $cache = $this->getCache();
+
+        $openapi = $this->getOpenapi();
+        $openapi->setCache($cache);
+
+        $document = $openapi->toArray();
+
+        $this->assertArrayHasKey($openapi->getBuildCacheKey(), $cache->storage);
+
+        $this->assertSame($document, $cache->storage[$openapi->getBuildCacheKey()]);
+
+        $cache->storage[$openapi->getBuildCacheKey()] = ['foo' => 'bar'];
+
+        $this->assertSame($cache->storage[$openapi->getBuildCacheKey()], $openapi->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testOperationsCache() : void
+    {
+        $cache = $this->getCache();
+
+        $openapi = $this->getOpenapi();
+        $openapi->setCache($cache);
+
+        // background caching of operations...
+        $openapi->toArray();
+
+        $this->assertArrayHasKey($openapi->getOperationsCacheKey(), $cache->storage);
+
+        $this->assertArrayHasKey('home', $cache->storage[$openapi->getOperationsCacheKey()]);
+
+        $testOperation = new Operation();
+        $testOperation->operationId = 'home';
+        $testOperation->summary = '7AC99FFC-6AB0-4EF1-A75E-49E0B85E7849';
+
+        $cache->storage[$openapi->getBuildCacheKey()] = null;
+        $cache->storage[$openapi->getOperationsCacheKey()] = [];
+        $cache->storage[$openapi->getOperationsCacheKey()][$testOperation->operationId] = $testOperation;
+
+        $document = $openapi->toArray();
+
+        $this->assertSame($testOperation->summary, $document['paths']['/']['get']['summary'] ?? null);
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToUndefinedClass() : void
+    {
+        $route = new Route(
+            '73F7225A-DCB9-453C-824F-D8DB3F0AED86',
+            '/73F7225A-DCB9-453C-824F-D8DB3F0AED86',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToUndefinedClass',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToUndefinedClassMethod() : void
+    {
+        $route = new Route(
+            '060CA710-EFB0-487C-9BBE-E15588C2E6E5',
+            '/060CA710-EFB0-487C-9BBE-E15588C2E6E5',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToUndefinedClassMethod',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToUndefinedClassProperty() : void
+    {
+        $route = new Route(
+            'C7B45F3F-734C-4B08-978D-92AC1072AF3E',
+            '/C7B45F3F-734C-4B08-978D-92AC1072AF3E',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToUndefinedClassProperty',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToClassWithoutTarget() : void
+    {
+        $route = new Route(
+            '59402135-6692-4E29-BE22-4D002E4D5577',
+            '/59402135-6692-4E29-BE22-4D002E4D5577',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToClassWithoutTarget',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToClassMethodWithoutTarget() : void
+    {
+        $route = new Route(
+            'F3593B39-8ACA-4A7E-A33B-748E418F84C1',
+            '/F3593B39-8ACA-4A7E-A33B-748E418F84C1',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToClassMethodWithoutTarget',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testReferenceToClassPropertyWithoutTarget() : void
+    {
+        $route = new Route(
+            '9F8570EE-D194-4EC4-A977-19EA2D6B3CEC',
+            '/9F8570EE-D194-4EC4-A977-19EA2D6B3CEC',
+            ['GET'],
+            new CallableRequestHandler([
+                new InvalidController(),
+                'refersToClassPropertyWithoutTarget',
+            ])
+        );
+
+        $openapi = $this->getOpenapi();
+        $openapi->addRoute($route);
+
+        $this->expectException(InvalidReferenceException::class);
+
+        $openapi->toArray();
     }
 }

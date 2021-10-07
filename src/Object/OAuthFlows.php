@@ -19,9 +19,11 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS OAuth Flows Object
  *
+ * Allows configuration of the supported OAuth Flows.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#oauth-flows-object
  */
-class OAuthFlows extends AbstractObject
+final class OAuthFlows extends AbstractObject
 {
 
     /**
@@ -45,7 +47,7 @@ class OAuthFlows extends AbstractObject
     /**
      * Configuration for the OAuth Client Credentials flow
      *
-     * Previously called `application` in OpenAPI 2.0.
+     * Previously called application in OpenAPI 2.0.
      *
      * @var OAuthFlow
      *
@@ -56,7 +58,7 @@ class OAuthFlows extends AbstractObject
     /**
      * Configuration for the OAuth Authorization Code flow
      *
-     * Previously called `accessCode` in OpenAPI 2.0.
+     * Previously called accessCode in OpenAPI 2.0.
      *
      * @var OAuthFlow
      *

@@ -25,7 +25,7 @@ final class RequestBodyReference extends AbstractAnnotationReference implements 
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

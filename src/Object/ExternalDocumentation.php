@@ -19,13 +19,17 @@ use Sunrise\Http\Router\OpenApi\AbstractObject;
 /**
  * OAS External Documentation Object
  *
+ * Allows referencing an external resource for extended documentation.
+ *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#external-documentation-object
  */
-class ExternalDocumentation extends AbstractObject
+final class ExternalDocumentation extends AbstractObject
 {
 
     /**
-     * The URL for the target documentation. Value MUST be in the format of a URL
+     * The URL for the target documentation
+     *
+     * This MUST be in the form of a URL.
      *
      * @var string
      *
@@ -34,11 +38,14 @@ class ExternalDocumentation extends AbstractObject
     protected $url;
 
     /**
-     * A short description of the target documentation. CommonMark syntax MAY be used for rich text representation
+     * A description of the target documentation
+     *
+     * CommonMark syntax MAY be used for rich text representation.
      *
      * @var string
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-externaldocdescription
+     * @link https://spec.commonmark.org
      */
     protected $description;
 

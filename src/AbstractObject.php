@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import functions
  */
 use function array_walk_recursive;
+use function get_object_vars;
 use function in_array;
 
 /**
@@ -33,16 +34,16 @@ abstract class AbstractObject implements ObjectInterface
     /**
      * The fields specified in this array will be renamed when converting this object to an array
      *
-     * This constant must contain the following structure: `[field => alias, ...]`
+     * This constant must contain the following structure: [field => alias]
      *
-     * @var array
+     * @var array<string, string>
      */
     protected const FIELD_ALIASES = [];
 
     /**
-     * Recursively converts the object into an array with its descendants
+     * Recursively converts the object to an array
      *
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function toArray() : array
     {
@@ -65,22 +66,19 @@ abstract class AbstractObject implements ObjectInterface
     protected function getFields() : array
     {
         $fields = [];
-
-        foreach ($this as $name => $value) {
-            // the internal field (property) should be ignored...
-            if ('_' === $name[0]) {
-                continue;
-            }
-
-            // the field (property) doesn't matter or is NULL...
+        $properties = get_object_vars($this);
+        foreach ($properties as $name => $value) {
+            // the property has no value or is null...
             if (null === $value) {
                 continue;
             }
 
+            // the property must be ignored...
             if (in_array($name, static::IGNORE_FIELDS)) {
                 continue;
             }
 
+            // the property must be renamed...
             if (isset(static::FIELD_ALIASES[$name])) {
                 $name = static::FIELD_ALIASES[$name];
             }

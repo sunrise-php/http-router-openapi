@@ -25,7 +25,7 @@ final class ParameterReference extends AbstractAnnotationReference implements Pa
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

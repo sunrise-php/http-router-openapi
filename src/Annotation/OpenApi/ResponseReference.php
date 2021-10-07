@@ -25,7 +25,7 @@ final class ResponseReference extends AbstractAnnotationReference implements Res
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAnnotationName() : string
     {

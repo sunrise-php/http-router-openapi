@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Object;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\OpenApi\AbstractObject;
+use Sunrise\Http\Router\OpenApi\ComponentInterface;
 use Sunrise\Http\Router\OpenApi\Object\OAuthFlows;
 use Sunrise\Http\Router\OpenApi\Object\SecurityScheme;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
 
 /**
  * SecuritySchemeTest
@@ -25,7 +25,7 @@ class SecuritySchemeTest extends TestCase
         $object = new SecurityScheme('foo', 'bar');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
-        $this->assertInstanceOf(ComponentObjectInterface::class, $object);
+        $this->assertInstanceOf(ComponentInterface::class, $object);
     }
 
     /**
