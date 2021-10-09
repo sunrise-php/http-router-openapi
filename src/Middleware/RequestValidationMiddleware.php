@@ -41,6 +41,15 @@ final class RequestValidationMiddleware implements MiddlewareInterface
 {
 
     /**
+     * Default validation options
+     *
+     * @var int
+     *
+     * @link https://github.com/justinrainbow/json-schema/tree/4c74da50b0ca56469f5c7b1903ab5f2c7bf68f4d#configuration-options
+     */
+    public const DEFAULT_VALIDATION_OPTIONS = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
+
+    /**
      * Openapi instance
      *
      * @var OpenApi
@@ -58,8 +67,6 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      * Validation options
      *
      * @var int
-     *
-     * @link https://github.com/justinrainbow/json-schema/tree/4c74da50b0ca56469f5c7b1903ab5f2c7bf68f4d#configuration-options
      */
     private $cookieValidationOptions;
     private $headerValidationOptions;
@@ -70,9 +77,18 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      * Constructor of the class
      *
      * @param OpenApi $openapi
+     * @param int $cookieValidationOptions
+     * @param int $headerValidationOptions
+     * @param int $queryValidationOptions
+     * @param int $bodyValidationOptions
      */
-    public function __construct(OpenApi $openapi)
-    {
+    public function __construct(
+        OpenApi $openapi,
+        int $cookieValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        int $headerValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        int $queryValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        int $bodyValidationOptions = self::DEFAULT_VALIDATION_OPTIONS
+    ) {
         if (!class_exists(Validator::class)) {
             // @codeCoverageIgnoreStart
             throw new RuntimeException('To use request validation, install the "justinrainbow/json-schema".');
@@ -80,12 +96,11 @@ final class RequestValidationMiddleware implements MiddlewareInterface
         }
 
         $this->openapi = $openapi;
+        $this->cookieValidationOptions = $cookieValidationOptions;
+        $this->headerValidationOptions = $headerValidationOptions;
+        $this->queryValidationOptions = $queryValidationOptions;
+        $this->bodyValidationOptions = $bodyValidationOptions;
         $this->validator = new Validator();
-
-        $this->cookieValidationOptions = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
-        $this->headerValidationOptions = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
-        $this->queryValidationOptions = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
-        $this->bodyValidationOptions = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
     }
 
     /**
