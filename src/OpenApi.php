@@ -52,7 +52,7 @@ use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 use const YAML_ANY_BREAK;
-use const YAML_ANY_ENCODING;
+use const YAML_UTF8_ENCODING;
 
 /**
  * OAS OpenAPI Object
@@ -384,7 +384,7 @@ final class OpenApi extends AbstractObject
             // @codeCoverageIgnoreEnd
         }
 
-        return yaml_emit($this->toArray(), YAML_ANY_ENCODING, YAML_ANY_BREAK);
+        return yaml_emit($this->toArray(), YAML_UTF8_ENCODING, YAML_ANY_BREAK);
     }
 
     /**
