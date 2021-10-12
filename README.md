@@ -9,10 +9,14 @@
 
 ---
 
+## Important to understanding
+
+* [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/6ba1577240b79c9f613c2ea8d745c6ef6c832e50/versions/3.0.2.md)
+
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router-openapi:^2.0'
+composer require 'sunrise/http-router-openapi:^2.1'
 ```
 
 ## QuickStart
@@ -21,7 +25,7 @@ composer require 'sunrise/http-router-openapi:^2.0'
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\OpenApi;
-use Sunrise\Http\Router\Router;
+use Sunrise\Http\Router\OpenApi\RouteInterface;
 
 $openapi = new OpenApi(new Info('Acme', '1.0.0'));
 
@@ -30,7 +34,11 @@ $openapi = new OpenApi(new Info('Acme', '1.0.0'));
 $openapi->setCache($cache);
 
 // Passing all routes to the openapi object:
-/** @var Router $router */
+/** @var RouteInterface[] $routes */
+$openapi->addRoute(...$routes);
+
+// When using Sunrise Router:
+/** @var \Sunrise\Http\Router\Router $router */
 $openapi->addRoute(...$router->getRoutes());
 ```
 
@@ -41,7 +49,7 @@ $openapi->addRoute(...$router->getRoutes());
 $openapi->toJson();
 // Converting the openapi object to YAML document:
 $openapi->toYaml();
-// Converting the openapi object to an array
+// Converting the openapi object to an array:
 $openapi->toArray();
 ```
 
@@ -66,7 +74,6 @@ $openapi->getResponseBodyJsonSchema();
 ```php
 use Sunrise\Http\Router\OpenApi\Middleware\RequestValidationMiddleware;
 use Sunrise\Http\Router\OpenApi\OpenApi;
-use Sunrise\Http\Router\Route;
 
 /** @var OpenApi $openapi */
 $middleware = new RequestValidationMiddleware($openapi);
