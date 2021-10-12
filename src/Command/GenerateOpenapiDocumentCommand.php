@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router\OpenApi\Command;
 /**
  * Import classes
  */
+use RuntimeException;
 use Sunrise\Http\Router\OpenApi\OpenApi;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,29 +22,52 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * GenerateOpenapiDocumentCommand
+ * Import functions
  */
-final class GenerateOpenapiDocumentCommand extends Command
+use function sprintf;
+
+/**
+ * This command generates OpenAPI document
+ *
+ * If you cannot pass the openapi to the constructor,
+ * or your architecture has problems with autowiring,
+ * then inherit this class and override the getOpenapi method.
+ *
+ * @since 2.0.0
+ */
+class GenerateOpenapiDocumentCommand extends Command
 {
 
     /**
-     * Openapi instance
+     * {@inheritdoc}
+     */
+    protected static $defaultName = 'router:generate-openapi-document';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static $defaultDescription = 'Generates OpenAPI document';
+
+    /**
+     * The openapi instance
      *
-     * @var OpenApi
+     * @var OpenApi|null
      */
     private $openapi;
 
     /**
-     * {@inheritdoc}
+     * Constructor of the class
      *
-     * @param OpenApi $openapi
-     * @param string|null $name
+     * @param OpenApi|null $openapi
      */
-    public function __construct(OpenApi $openapi, ?string $name = null)
+    public function __construct(?OpenApi $openapi = null)
     {
         $this->openapi = $openapi;
 
-        parent::__construct($name ?? 'router:generate-openapi-document');
+        parent::__construct();
+
+        $this->setName(static::$defaultName);
+        $this->setDescription(static::$defaultDescription);
 
         $this->addOption(
             'output-format',
@@ -55,21 +79,40 @@ final class GenerateOpenapiDocumentCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * Gets the openapi instance
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @return OpenApi
      *
-     * @return int Exit code
+     * @throws RuntimeException
+     *         If the class doesn't contain the openapi instance.
      */
-    public function execute(InputInterface $input, OutputInterface $output) : int
+    protected function getOpenapi() : OpenApi
     {
+        if (null === $this->openapi) {
+            throw new RuntimeException(sprintf(
+                'The %2$s() method MUST return the %1$s class instance. ' .
+                'Pass the %1$s class instance to the constructor, or override the %2$s() method.',
+                OpenApi::class,
+                __METHOD__
+            ));
+        }
+
+        return $this->openapi;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final protected function execute(InputInterface $input, OutputInterface $output) : int
+    {
+        $openapi = $this->getOpenapi();
+
         switch ($input->getOption('output-format')) {
             case 'json':
-                $output->writeln($this->openapi->toJson());
+                $output->writeln($openapi->toJson());
                 return 0;
             case 'yaml':
-                $output->writeln($this->openapi->toYaml());
+                $output->writeln($openapi->toYaml());
                 return 0;
             default:
                 $output->writeln('<error>Unknown output format ("json", "yaml").</error>');

@@ -24,20 +24,26 @@ use Sunrise\Http\Router\Exception\BadRequestException;
 use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApi;
 use Sunrise\Http\Router\RouteInterface;
-use Sunrise\Http\Router\Route;
 use RuntimeException;
 
 /**
  * Import functions
  */
 use function class_exists;
+use function sprintf;
 use function strpos;
 use function substr;
 
 /**
- * RequestValidationMiddleware
+ * Validates the given request using all possible JSON schemes
+ *
+ * If you cannot pass the openapi to the constructor,
+ * or your architecture has problems with autowiring,
+ * then inherit this class and override the getOpenapi method.
+ *
+ * @since 2.0.0
  */
-final class RequestValidationMiddleware implements MiddlewareInterface
+class RequestValidationMiddleware implements MiddlewareInterface
 {
 
     /**
@@ -47,47 +53,61 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      *
      * @link https://github.com/justinrainbow/json-schema/tree/4c74da50b0ca56469f5c7b1903ab5f2c7bf68f4d#configuration-options
      */
-    public const DEFAULT_VALIDATION_OPTIONS = Constraint::CHECK_MODE_TYPE_CAST | Constraint::CHECK_MODE_COERCE_TYPES;
+    public const DEFAULT_VALIDATION_OPTIONS = Constraint::CHECK_MODE_TYPE_CAST|Constraint::CHECK_MODE_COERCE_TYPES;
 
     /**
-     * Openapi instance
+     * The openapi instance
      *
-     * @var OpenApi
+     * @var OpenApi|null
      */
     private $openapi;
 
     /**
-     * Validator instance
+     * Cookie validation options
      *
-     * @var Validator
-     */
-    private $validator;
-
-    /**
-     * Validation options
-     *
-     * @var int
+     * @var int|null
      */
     private $cookieValidationOptions;
+
+    /**
+     * Header validation options
+     *
+     * @var int|null
+     */
     private $headerValidationOptions;
+
+    /**
+     * Query validation options
+     *
+     * @var int|null
+     */
     private $queryValidationOptions;
+
+    /**
+     * Body validation options
+     *
+     * @var int|null
+     */
     private $bodyValidationOptions;
 
     /**
      * Constructor of the class
      *
-     * @param OpenApi $openapi
-     * @param int $cookieValidationOptions
-     * @param int $headerValidationOptions
-     * @param int $queryValidationOptions
-     * @param int $bodyValidationOptions
+     * @param OpenApi|null $openapi
+     * @param int|null $cookieValidationOptions
+     * @param int|null $headerValidationOptions
+     * @param int|null $queryValidationOptions
+     * @param int|null $bodyValidationOptions
+     *
+     * @throws RuntimeException
+     *         If the "justinrainbow/json-schema" isn't installed.
      */
     public function __construct(
-        OpenApi $openapi,
-        int $cookieValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
-        int $headerValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
-        int $queryValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
-        int $bodyValidationOptions = self::DEFAULT_VALIDATION_OPTIONS
+        ?OpenApi $openapi = null,
+        ?int $cookieValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        ?int $headerValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        ?int $queryValidationOptions = self::DEFAULT_VALIDATION_OPTIONS,
+        ?int $bodyValidationOptions = self::DEFAULT_VALIDATION_OPTIONS
     ) {
         if (!class_exists(Validator::class)) {
             // @codeCoverageIgnoreStart
@@ -96,11 +116,33 @@ final class RequestValidationMiddleware implements MiddlewareInterface
         }
 
         $this->openapi = $openapi;
+
         $this->cookieValidationOptions = $cookieValidationOptions;
         $this->headerValidationOptions = $headerValidationOptions;
         $this->queryValidationOptions = $queryValidationOptions;
         $this->bodyValidationOptions = $bodyValidationOptions;
-        $this->validator = new Validator();
+    }
+
+    /**
+     * Gets the openapi instance
+     *
+     * @return OpenApi
+     *
+     * @throws RuntimeException
+     *         If the class doesn't contain the openapi instance.
+     */
+    protected function getOpenapi() : OpenApi
+    {
+        if (null === $this->openapi) {
+            throw new RuntimeException(sprintf(
+                'The %2$s() method MUST return the %1$s class instance. ' .
+                'Pass the %1$s class instance to the constructor, or override the %2$s() method.',
+                OpenApi::class,
+                __METHOD__
+            ));
+        }
+
+        return $this->openapi;
     }
 
     /**
@@ -117,13 +159,15 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      * @throws UnsupportedMediaTypeException
      *         If the request body contains an unsupported type.
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+    final public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        $route = $request->getAttribute(Route::ATTR_NAME_FOR_ROUTE);
+        $route = $request->getAttribute(RouteInterface::ATTR_ROUTE);
         if (!($route instanceof RouteInterface)) {
             return $handler->handle($request);
         }
 
+        $openapi = $this->getOpenapi();
+        $validator = new Validator();
         $operationId = $route->getName();
 
         // https://tools.ietf.org/html/rfc7231#section-3.1.1.1
@@ -132,24 +176,52 @@ final class RequestValidationMiddleware implements MiddlewareInterface
             $contentType = substr($contentType, 0, $semicolon);
         }
 
-        $cookieJsonSchema = $this->openapi->getRequestCookieJsonSchema($operationId);
-        if (isset($cookieJsonSchema)) {
-            $this->validateRequestCookie($request, $cookieJsonSchema);
+        if (isset($this->cookieValidationOptions)) {
+            $jsonSchema = $openapi->getRequestCookieJsonSchema($operationId);
+            if (isset($jsonSchema)) {
+                $request = $this->validateRequestCookie(
+                    $request,
+                    $jsonSchema,
+                    $validator,
+                    $this->cookieValidationOptions
+                );
+            }
         }
 
-        $headerJsonSchema = $this->openapi->getRequestHeaderJsonSchema($operationId);
-        if (isset($headerJsonSchema)) {
-            $this->validateRequestHeader($request, $headerJsonSchema);
+        if (isset($this->headerValidationOptions)) {
+            $jsonSchema = $openapi->getRequestHeaderJsonSchema($operationId);
+            if (isset($jsonSchema)) {
+                $request = $this->validateRequestHeader(
+                    $request,
+                    $jsonSchema,
+                    $validator,
+                    $this->headerValidationOptions
+                );
+            }
         }
 
-        $queryJsonSchema = $this->openapi->getRequestQueryJsonSchema($operationId);
-        if (isset($queryJsonSchema)) {
-            $this->validateRequestQuery($request, $queryJsonSchema);
+        if (isset($this->queryValidationOptions)) {
+            $jsonSchema = $openapi->getRequestQueryJsonSchema($operationId);
+            if (isset($jsonSchema)) {
+                $request = $this->validateRequestQuery(
+                    $request,
+                    $jsonSchema,
+                    $validator,
+                    $this->queryValidationOptions
+                );
+            }
         }
 
-        $bodyJsonSchema = $this->openapi->getRequestBodyJsonSchema($operationId, $contentType);
-        if (isset($bodyJsonSchema)) {
-            $this->validateRequestBody($request, $bodyJsonSchema);
+        if (isset($this->bodyValidationOptions)) {
+            $jsonSchema = $openapi->getRequestBodyJsonSchema($operationId, $contentType);
+            if (isset($jsonSchema)) {
+                $request = $this->validateRequestBody(
+                    $request,
+                    $jsonSchema,
+                    $validator,
+                    $this->bodyValidationOptions
+                );
+            }
         }
 
         return $handler->handle($request);
@@ -160,23 +232,30 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      * @param array $jsonSchema
+     * @param Validator $validator
+     * @param int $validationOptions
      *
-     * @return void
+     * @return ServerRequestInterface
+     *         New request with changed data.
      *
      * @throws BadRequestException
-     *         If the request cookie isn't valid.
+     *         If the validation data isn't valid.
      */
-    private function validateRequestCookie(ServerRequestInterface $request, array $jsonSchema) : void
-    {
+    private function validateRequestCookie(
+        ServerRequestInterface $request,
+        array $jsonSchema,
+        Validator $validator,
+        int $validationOptions
+    ) : ServerRequestInterface {
         $cookies = $request->getCookieParams();
-
-        $this->validator->validate($cookies, $jsonSchema, $this->cookieValidationOptions);
-        if (!$this->validator->isValid()) {
+        $validator->validate($cookies, $jsonSchema, $validationOptions);
+        if (!$validator->isValid()) {
             throw new BadRequestException('The request cookie is not valid for this resource.', [
-                'jsonSchema' => $jsonSchema,
-                'errors' => $this->validator->getErrors(),
+                'errors' => $validator->getErrors(),
             ]);
         }
+
+        return $request;
     }
 
     /**
@@ -184,26 +263,34 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      * @param array $jsonSchema
+     * @param Validator $validator
+     * @param int $validationOptions
      *
-     * @return void
+     * @return ServerRequestInterface
+     *         New request with changed data.
      *
      * @throws BadRequestException
-     *         If the request header isn't valid.
+     *         If the validation data isn't valid.
      */
-    private function validateRequestHeader(ServerRequestInterface $request, array $jsonSchema) : void
-    {
+    private function validateRequestHeader(
+        ServerRequestInterface $request,
+        array $jsonSchema,
+        Validator $validator,
+        int $validationOptions
+    ) : ServerRequestInterface {
         $headers = [];
         foreach ($request->getHeaders() as $header => $_) {
             $headers[$header] = $request->getHeaderLine($header);
         }
 
-        $this->validator->validate($headers, $jsonSchema, $this->headerValidationOptions);
-        if (!$this->validator->isValid()) {
+        $validator->validate($headers, $jsonSchema, $validationOptions);
+        if (!$validator->isValid()) {
             throw new BadRequestException('The request header is not valid for this resource.', [
-                'jsonSchema' => $jsonSchema,
-                'errors' => $this->validator->getErrors(),
+                'errors' => $validator->getErrors(),
             ]);
         }
+
+        return $request;
     }
 
     /**
@@ -211,23 +298,30 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      * @param array $jsonSchema
+     * @param Validator $validator
+     * @param int $validationOptions
      *
-     * @return void
+     * @return ServerRequestInterface
+     *         New request with changed data.
      *
      * @throws BadRequestException
-     *         If the request query isn't valid.
+     *         If the validation data isn't valid.
      */
-    private function validateRequestQuery(ServerRequestInterface $request, array $jsonSchema) : void
-    {
+    private function validateRequestQuery(
+        ServerRequestInterface $request,
+        array $jsonSchema,
+        Validator $validator,
+        int $validationOptions
+    ) : ServerRequestInterface {
         $query = $request->getQueryParams();
-
-        $this->validator->validate($query, $jsonSchema, $this->queryValidationOptions);
-        if (!$this->validator->isValid()) {
+        $validator->validate($query, $jsonSchema, $validationOptions);
+        if (!$validator->isValid()) {
             throw new BadRequestException('The request query is not valid for this resource.', [
-                'jsonSchema' => $jsonSchema,
-                'errors' => $this->validator->getErrors(),
+                'errors' => $validator->getErrors(),
             ]);
         }
+
+        return $request->withQueryParams($query);
     }
 
     /**
@@ -235,22 +329,29 @@ final class RequestValidationMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      * @param array $jsonSchema
+     * @param Validator $validator
+     * @param int $validationOptions
      *
-     * @return void
+     * @return ServerRequestInterface
+     *         New request with changed data.
      *
      * @throws BadRequestException
-     *         If the request body isn't valid.
+     *         If the validation data isn't valid.
      */
-    private function validateRequestBody(ServerRequestInterface $request, array $jsonSchema) : void
-    {
+    private function validateRequestBody(
+        ServerRequestInterface $request,
+        array $jsonSchema,
+        Validator $validator,
+        int $validationOptions
+    ) : ServerRequestInterface {
         $body = $request->getParsedBody();
-
-        $this->validator->validate($body, $jsonSchema, $this->bodyValidationOptions);
-        if (!$this->validator->isValid()) {
+        $validator->validate($body, $jsonSchema, $validationOptions);
+        if (!$validator->isValid()) {
             throw new BadRequestException('The request body is not valid for this resource.', [
-                'jsonSchema' => $jsonSchema,
-                'errors' => $this->validator->getErrors(),
+                'errors' => $validator->getErrors(),
             ]);
         }
+
+        return $request->withParsedBody($body);
     }
 }

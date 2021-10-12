@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router\OpenApi\Command;
 /**
  * Import classes
  */
+use RuntimeException;
 use Sunrise\Http\Router\OpenApi\OpenApi;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,6 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Import functions
  */
 use function json_encode;
+use function sprintf;
 
 /**
  * Import constants
@@ -34,29 +36,47 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * GenerateJsonSchemaCommand
+ * This command generates JSON schema
+ *
+ * If you cannot pass the openapi to the constructor,
+ * or your architecture has problems with autowiring,
+ * then inherit this class and override the getOpenapi method.
+ *
+ * @since 2.0.0
  */
-final class GenerateJsonSchemaCommand extends Command
+class GenerateJsonSchemaCommand extends Command
 {
 
     /**
-     * Openapi instance
+     * {@inheritdoc}
+     */
+    protected static $defaultName = 'router:generate-json-schema';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static $defaultDescription = 'Generates JSON schema';
+
+    /**
+     * The openapi instance
      *
-     * @var OpenApi
+     * @var OpenApi|null
      */
     private $openapi;
 
     /**
-     * {@inheritdoc}
+     * Constructor of the class
      *
-     * @param OpenApi $openapi
-     * @param string|null $name
+     * @param OpenApi|null $openapi
      */
-    public function __construct(OpenApi $openapi, ?string $name = null)
+    public function __construct(?OpenApi $openapi = null)
     {
         $this->openapi = $openapi;
 
-        parent::__construct($name ?? 'router:generate-json-schema');
+        parent::__construct();
+
+        $this->setName(static::$defaultName);
+        $this->setDescription(static::$defaultDescription);
 
         $this->addArgument(
             'operation-id',
@@ -80,47 +100,60 @@ final class GenerateJsonSchemaCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * Gets the openapi instance
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @return OpenApi
      *
-     * @return int Exit code
+     * @throws RuntimeException
+     *         If the class doesn't contain the openapi instance.
      */
-    public function execute(InputInterface $input, OutputInterface $output) : int
+    protected function getOpenapi() : OpenApi
     {
+        if (null === $this->openapi) {
+            throw new RuntimeException(sprintf(
+                'The %2$s() method MUST return the %1$s class instance. ' .
+                'Pass the %1$s class instance to the constructor, or override the %2$s() method.',
+                OpenApi::class,
+                __METHOD__
+            ));
+        }
+
+        return $this->openapi;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final protected function execute(InputInterface $input, OutputInterface $output) : int
+    {
+        $openapi = $this->getOpenapi();
         $operationId = $input->getArgument('operation-id');
         $operationSection = $input->getArgument('operation-section');
-        $contentType = $input->getOption('content-type');
 
         switch ($operationSection) {
             case 'cookie':
-                $output->writeln($this->jsonify($this->openapi->getRequestCookieJsonSchema($operationId)));
-                return 0;
+                $jsonSchema = $openapi->getRequestCookieJsonSchema($operationId);
+                break;
             case 'header':
-                $output->writeln($this->jsonify($this->openapi->getRequestHeaderJsonSchema($operationId)));
-                return 0;
+                $jsonSchema = $openapi->getRequestHeaderJsonSchema($operationId);
+                break;
             case 'query':
-                $output->writeln($this->jsonify($this->openapi->getRequestQueryJsonSchema($operationId)));
-                return 0;
+                $jsonSchema = $openapi->getRequestQueryJsonSchema($operationId);
+                break;
             case 'body':
-                $output->writeln($this->jsonify($this->openapi->getRequestBodyJsonSchema($operationId, $contentType)));
-                return 0;
+                $jsonSchema = $openapi->getRequestBodyJsonSchema($operationId, $input->getOption('content-type'));
+                break;
             default:
                 $output->writeln('<error>Unknown operation section ("cookie", "header", "query", "body")</error>');
                 return 1;
         }
-    }
 
-    /**
-     * Jsonifies the given data and returns the result
-     *
-     * @param array|null $data
-     *
-     * @return string
-     */
-    private function jsonify(?array $data) : string
-    {
-        return json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+        if (!isset($jsonSchema)) {
+            $output->writeln('<comment>Not enough data to build JSON schema</comment>');
+            return 1;
+        }
+
+        $output->writeln(json_encode($jsonSchema, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+        return 0;
     }
 }
