@@ -37,7 +37,7 @@ final class OperationConverter
 {
 
     /**
-     * Blank JSON Schema
+     * Blank JSON schema
      *
      * @var array
      *

@@ -43,7 +43,7 @@ trait OpenapiTestKit
 {
 
     /**
-     * Gets Openapi instance
+     * Gets the openapi instance
      *
      * @return OpenApi
      */
@@ -62,7 +62,7 @@ trait OpenapiTestKit
     {
         if (!class_exists(Validator::class)) {
             // @codeCoverageIgnoreStart
-            $this->markTestSkipped('To use Openapi Test Kit, install the "justinrainbow/json-schema".');
+            $this->markTestSkipped('To use OpenAPI Test Kit, install the "justinrainbow/json-schema".');
             // @codeCoverageIgnoreEnd
         }
 
