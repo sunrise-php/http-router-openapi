@@ -20,6 +20,7 @@ use Sunrise\Http\Router\OpenApi\Tests\Fixtures\OpenapiAwareTrait;
 use Sunrise\Http\Router\OpenApi\Tests\Fixtures\SomeApp\Controller\InvalidController;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\Route;
+use TypeError;
 
 /**
  * Import functions
@@ -313,13 +314,11 @@ class OpenApiTest extends TestCase
 
         $document = $openapi->toArray();
 
-        $this->assertArrayHasKey($openapi->getBuildCacheKey(), $cache->storage);
+        $this->assertSame($document, $cache->get($openapi->getBuildCacheKey()));
 
-        $this->assertSame($document, $cache->storage[$openapi->getBuildCacheKey()]);
+        $cache->set($openapi->getBuildCacheKey(), ['foo' => 'bar']);
 
-        $cache->storage[$openapi->getBuildCacheKey()] = ['foo' => 'bar'];
-
-        $this->assertSame($cache->storage[$openapi->getBuildCacheKey()], $openapi->toArray());
+        $this->assertSame($cache->get($openapi->getBuildCacheKey()), $openapi->toArray());
     }
 
     /**
@@ -332,24 +331,29 @@ class OpenApiTest extends TestCase
         $openapi = $this->getOpenapi();
         $openapi->setCache($cache);
 
-        // background caching of operations...
-        $openapi->toArray();
+        $operation = new Operation();
+        $operation->operationId = 'home';
+        $operation->description = '7AC99FFC-6AB0-4EF1-A75E-49E0B85E7849';
 
-        $this->assertArrayHasKey($openapi->getOperationsCacheKey(), $cache->storage);
+        $cache->set($openapi->getOperationsCacheKey(), [
+            $operation->operationId => $operation,
+        ]);
 
-        $this->assertArrayHasKey('home', $cache->storage[$openapi->getOperationsCacheKey()]);
-
-        $testOperation = new Operation();
-        $testOperation->operationId = 'home';
-        $testOperation->summary = '7AC99FFC-6AB0-4EF1-A75E-49E0B85E7849';
-
-        $cache->storage[$openapi->getBuildCacheKey()] = null;
-        $cache->storage[$openapi->getOperationsCacheKey()] = [];
-        $cache->storage[$openapi->getOperationsCacheKey()][$testOperation->operationId] = $testOperation;
-
-        $document = $openapi->toArray();
-
-        $this->assertSame($testOperation->summary, $document['paths']['/']['get']['summary'] ?? null);
+        $this->assertSame([
+            'openapi' => '3.0.2',
+            'info' => [
+                'title' => 'Some application',
+                'version' => '1.0.0',
+            ],
+            'paths' => [
+                '/' => [
+                    'get' => [
+                        'operationId' => $operation->operationId,
+                        'description' => $operation->description,
+                    ],
+                ],
+            ],
+        ], $openapi->toArray());
     }
 
     /**
@@ -488,5 +492,17 @@ class OpenApiTest extends TestCase
         $this->expectException(InvalidReferenceException::class);
 
         $openapi->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddInvalidRoute() : void
+    {
+        $openapi = $this->getOpenapi();
+
+        $this->expectException(TypeError::class);
+
+        $openapi->addRoute(new \stdClass);
     }
 }

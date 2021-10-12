@@ -12,7 +12,9 @@ use Sunrise\Http\Router\Exception\BadRequestException;
 use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException;
 use Sunrise\Http\Router\OpenApi\Middleware\RequestValidationMiddleware;
 use Sunrise\Http\Router\OpenApi\Tests\Fixtures\OpenapiAwareTrait;
+use Sunrise\Http\Router\OpenApi\Openapi;
 use Sunrise\Http\Router\Route;
+use RuntimeException;
 
 /**
  * RequestValidationMiddlewareTest
@@ -227,5 +229,54 @@ class RequestValidationMiddlewareTest extends TestCase
         $response = $middleware->process($request, $route);
 
         $this->assertSame(201, $response->getStatusCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithoutOpenapi() : void
+    {
+        $route = $this->getRouter()->getRoute('users.create');
+
+        $request = (new ServerRequestFactory)
+            ->createServerRequest('GET', '/')
+            ->withAttribute(Route::ATTR_NAME_FOR_ROUTE, $route);
+
+        $middleware = new RequestValidationMiddleware();
+
+        $this->expectException(RuntimeException::class);
+
+        $middleware->process($request, $route);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunInheritedMiddleware() : void
+    {
+        // @codingStandardsIgnoreStart
+        $middleware = new class($this->getOpenapi()) extends RequestValidationMiddleware {
+            private $_openapi;
+
+            public function __construct(Openapi $openapi) {
+                $this->_openapi = $openapi;
+            }
+
+            protected function getOpenapi() : OpenApi {
+                return $this->_openapi;
+            }
+        };
+        // @codingStandardsIgnoreEnd
+
+        $route = $this->getRouter()->getRoute('users.list');
+
+        $request = (new ServerRequestFactory)
+            ->createServerRequest('GET', '/')
+            ->withCookieParams(['limit' => '100'])
+            ->withAttribute(Route::ATTR_NAME_FOR_ROUTE, $route);
+
+        $response = $middleware->process($request, $route);
+
+        $this->assertSame(200, $response->getStatusCode());
     }
 }
