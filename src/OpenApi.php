@@ -20,29 +20,26 @@ use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Schema;
+use Sunrise\Http\Router\OpenApi\Bridge\Sunrise\SunriseRouteProxy;
 use Sunrise\Http\Router\OpenApi\Object\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\Object\Info;
 use Sunrise\Http\Router\OpenApi\Object\SecurityRequirement;
 use Sunrise\Http\Router\OpenApi\Object\Server;
 use Sunrise\Http\Router\OpenApi\Object\Tag;
 use Sunrise\Http\Router\OpenApi\Utility\OperationConverter;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\RouteInterface as SunriseRouteInterface;
 use ReflectionClass;
-use ReflectionMethod;
-use Reflector;
 use RuntimeException;
+use TypeError;
 
 /**
  * Import functions
  */
-use function Sunrise\Http\Router\path_parse;
-use function Sunrise\Http\Router\path_plain;
 use function extension_loaded;
 use function hash;
-use function is_array;
 use function json_encode;
 use function strtolower;
+use function sprintf;
 use function yaml_emit;
 
 /**
@@ -52,7 +49,7 @@ use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 use const YAML_ANY_BREAK;
-use const YAML_ANY_ENCODING;
+use const YAML_UTF8_ENCODING;
 
 /**
  * OAS OpenAPI Object
@@ -347,13 +344,28 @@ final class OpenApi extends AbstractObject
     }
 
     /**
-     * @param RouteInterface ...$routes
+     * @param RouteInterface|SunriseRouteInterface ...$routes
      *
      * @return void
+     *
+     * @throws TypeError
      */
-    public function addRoute(RouteInterface ...$routes) : void
+    public function addRoute(...$routes) : void
     {
         foreach ($routes as $route) {
+            // BC for Sunrise Router...
+            if ($route instanceof SunriseRouteInterface) {
+                $route = new SunriseRouteProxy($route);
+            }
+
+            if (!($route instanceof RouteInterface)) {
+                throw new TypeError(sprintf(
+                    'The %s method expects an object that implements %s.',
+                    __METHOD__,
+                    RouteInterface::class
+                ));
+            }
+
             $this->routes[$route->getName()] = $route;
         }
     }
@@ -384,7 +396,7 @@ final class OpenApi extends AbstractObject
             // @codeCoverageIgnoreEnd
         }
 
-        return yaml_emit($this->toArray(), YAML_ANY_ENCODING, YAML_ANY_BREAK);
+        return yaml_emit($this->toArray(), YAML_UTF8_ENCODING, YAML_ANY_BREAK);
     }
 
     /**
@@ -441,8 +453,10 @@ final class OpenApi extends AbstractObject
             if (isset($this->routes[$operation->operationId])) {
                 $this->addComponent(...$operation->getReferencedObjects());
 
-                $path = path_plain($this->routes[$operation->operationId]->getPath());
-                foreach ($this->routes[$operation->operationId]->getMethods() as $method) {
+                $path = $this->routes[$operation->operationId]->getPlainPath();
+                $methods = $this->routes[$operation->operationId]->getMethods();
+
+                foreach ($methods as $method) {
                     // https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#fixed-fields-7
                     $lcmethod = strtolower($method);
 
@@ -488,7 +502,7 @@ final class OpenApi extends AbstractObject
 
         $operations = [];
         foreach ($this->routes as $route) {
-            $operation = $this->getRouteOperation($route, $annotationReader);
+            $operation = $this->fetchOperation($route, $annotationReader);
             if (isset($operation)) {
                 $operations[$operation->operationId] = $operation;
             }
@@ -498,19 +512,16 @@ final class OpenApi extends AbstractObject
     }
 
     /**
-     * Gets the given route operation
-     *
-     * TODO: Can be moved to a new abstract layer,
-     *       which would make support for any router...
+     * Fetches an operation object from the given route
      *
      * @param RouteInterface $route
      * @param AnnotationReader $annotationReader
      *
      * @return Operation|null
      */
-    private function getRouteOperation(RouteInterface $route, AnnotationReader $annotationReader) : ?Operation
+    private function fetchOperation(RouteInterface $route, AnnotationReader $annotationReader) : ?Operation
     {
-        $holder = $this->getRouteHolder($route);
+        $holder = $route->getHolder();
         if (null === $holder) {
             return null;
         }
@@ -523,67 +534,44 @@ final class OpenApi extends AbstractObject
             return null;
         }
 
-        // override the operation ID...
         $operation->operationId = $route->getName();
 
-        if (empty($operation->summary) && !empty($summary = $route->getSummary())) {
+        if (null === $operation->summary && '' !== ($summary = $route->getSummary())) {
             $operation->summary = $summary;
         }
 
-        if (empty($operation->description) && !empty($description = $route->getDescription())) {
+        if (null === $operation->description && '' !== ($description = $route->getDescription())) {
             $operation->description = $description;
         }
 
-        if (empty($operation->tags) && !empty($tags = $route->getTags())) {
+        if (null === $operation->tags && [] !== ($tags = $route->getTags())) {
             $operation->tags = $tags;
         }
 
-        $attributes = path_parse($route->getPath());
+        $attributes = $route->getPathAttributes();
         foreach ($attributes as $attribute) {
-            $parameter = new Parameter();
-            $parameter->in = 'path';
-            $parameter->name = $attribute['name'];
-            $parameter->required = !$attribute['isOptional'];
+            if (isset($attribute['name'])) {
+                $parameter = new Parameter();
+                $parameter->in = 'path';
+                $parameter->name = $attribute['name'];
 
-            if (isset($attribute['pattern'])) {
-                $parameter->schema = new Schema();
-                $parameter->schema->type = 'string';
-                $parameter->schema->pattern = $attribute['pattern'];
+                if (isset($attribute['pattern'])) {
+                    $parameter->schema = new Schema();
+                    $parameter->schema->type = 'string';
+                    $parameter->schema->pattern = $attribute['pattern'];
+                }
+
+                if (isset($attribute['isOptional'])) {
+                    $parameter->required = !$attribute['isOptional'];
+                }
+
+                $operation->parameters[] = $parameter;
             }
-
-            $operation->parameters[] = $parameter;
         }
 
         $operation->setHolder($holder);
         $operation->collectReferencedObjects($annotationReader);
 
         return $operation;
-    }
-
-    /**
-     * Gets the given route holder
-     *
-     * @param RouteInterface $route
-     *
-     * @return ReflectionClass|ReflectionMethod|null
-     */
-    private function getRouteHolder(RouteInterface $route) : ?Reflector
-    {
-        $holder = $route->getHolder();
-        if (isset($holder)) {
-            return $holder;
-        }
-
-        $handler = $route->getRequestHandler();
-        if (!($handler instanceof CallableRequestHandler)) {
-            return new ReflectionClass($handler);
-        }
-
-        $callback = $handler->getCallback();
-        if (is_array($callback)) {
-            return new ReflectionMethod(...$callback);
-        }
-
-        return null;
     }
 }

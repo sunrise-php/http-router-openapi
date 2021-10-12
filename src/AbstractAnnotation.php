@@ -106,4 +106,36 @@ abstract class AbstractAnnotation extends AbstractObject
 
         return $this->referencedObjects;
     }
+
+    /**
+     * Serializes the object
+     *
+     * @return array
+     */
+    public function __serialize() : array
+    {
+        // reflector can't be serialized...
+        $this->holder = null;
+
+        $data = [];
+        foreach ($this as $key => $value) {
+            $data[$key] = $value;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Unserializes the object
+     *
+     * @param array $data
+     *
+     * @return void
+     */
+    public function __unserialize(array $data) : void
+    {
+        foreach ($data as $key => $value) {
+            $this->$key = $value;
+        }
+    }
 }

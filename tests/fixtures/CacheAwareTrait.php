@@ -4,6 +4,9 @@ namespace Sunrise\Http\Router\OpenApi\Tests\Fixtures;
 
 use Psr\SimpleCache\CacheInterface;
 
+use function serialize;
+use function unserialize;
+
 trait CacheAwareTrait
 {
     private static $permanentCacheStorage = [];
@@ -21,7 +24,7 @@ trait CacheAwareTrait
         }
 
         $cache->method('get')->will($this->returnCallback(function ($key) use ($cache) {
-            return $cache->storage[$key] ?? null;
+            return isset($cache->storage[$key]) ? unserialize($cache->storage[$key]) : null;
         }));
 
         $cache->method('has')->will($this->returnCallback(function ($key) use ($cache) {
@@ -29,7 +32,7 @@ trait CacheAwareTrait
         }));
 
         $cache->method('set')->will($this->returnCallback(function ($key, $value) use ($cache) {
-            $cache->storage[$key] = $value;
+            $cache->storage[$key] = serialize($value);
         }));
 
         return $cache;

@@ -29,7 +29,7 @@ use function spl_object_hash;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object
  *
- * @final Don't use the object outside of the package.
+ * @final
  */
 class Parameter extends AbstractAnnotation implements ParameterInterface, ComponentInterface
 {
@@ -147,7 +147,7 @@ class Parameter extends AbstractAnnotation implements ParameterInterface, Compon
     /**
      * {@inheritdoc}
      */
-    public function getComponentName() : string
+    final public function getComponentName() : string
     {
         return 'parameters';
     }
@@ -155,7 +155,7 @@ class Parameter extends AbstractAnnotation implements ParameterInterface, Compon
     /**
      * {@inheritdoc}
      */
-    public function getReferenceName() : string
+    final public function getReferenceName() : string
     {
         return $this->refName ?? spl_object_hash($this);
     }
