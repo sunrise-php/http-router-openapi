@@ -29,8 +29,10 @@ use function spl_object_hash;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object
  * @link https://json-schema.org/draft/2019-09/json-schema-validation.html
+ *
+ * @final
  */
-final class Schema extends AbstractAnnotation implements SchemaInterface, ComponentInterface
+class Schema extends AbstractAnnotation implements SchemaInterface, ComponentInterface
 {
 
     /**
