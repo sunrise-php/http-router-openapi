@@ -29,7 +29,7 @@
         "phpunit/phpunit": "7.5.20|9.5.0",
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-factory": "1.1.0",
-        "sunrise/http-router": "^2.11",
+        "sunrise/http-router": "2.16.1",
         "symfony/console": "^4.4",
         "justinrainbow/json-schema": "5.2.10"
     },
