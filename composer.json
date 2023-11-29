@@ -30,7 +30,7 @@
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-factory": "1.1.0",
         "sunrise/http-router": "^2.11",
-        "symfony/console": "^4.4",
+        "symfony/console": "^7.0",
         "justinrainbow/json-schema": "5.2.10"
     },
     "autoload": {
